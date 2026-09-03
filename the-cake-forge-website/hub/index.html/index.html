@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Cake Forge | Staff Portal & Operations</title>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --card-hover: #334155;
+      --accent: #f59e0b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      max-width: 1000px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      background-color: var(--card-hover);
+      border-color: var(--accent);
+    }
+
+    .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    footer {
+      margin-top: auto;
+      padding-top: 3rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>The Cake Forge Hub</h1>
+    <p>Internal Operations & Business Management</p>
+  </header>
+
+  <main class="grid">
+    <!-- HACCP Tool -->
+    <a href="haccp-console.html" class="card">
+      <div>
+        <div class="card-icon">🛡️</div>
+        <h2>HACCP & Compliance</h2>
+        <p>Food safety monitoring, temperature logs, deviation records, and digital SFBB compliance.</p>
+      </div>
+      <span class="badge">Open Console &rarr;</span>
+    </a>
+
+    <!-- Cake Pricing Calculator -->
+    <a href="cake-pricing.html" class="card">
+      <div>
+        <div class="card-icon">🧮</div>
+        <h2>Cake Pricing Calculator</h2>
+        <p>Calculate ingredient costs, labor hours, profit margins, and generate bespoke customer quotes.</p>
+      </div>
+      <span class="badge">Open Calculator &rarr;</span>
+    </a>
+
+    <!-- Tin & Ingredient Scaler -->
+    <a href="tin-calculator.html" class="card">
+      <div>
+        <div class="card-icon">🎂</div>
+        <h2>Tin & Ingredient Scaler</h2>
+        <p>Convert and scale recipe quantities automatically based on cake tin shape and sizing.</p>
+      </div>
+      <span class="badge">Open Scaler &rarr;</span>
+    </a>
+  </main>
+
+  <footer>
+    <p><a href="../index.html">&larr; Return to Public Website</a></p>
+  </footer>
+
+</body>
+</html>
