@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Cake Forge | Bespoke Cake Artistry Cumbria</title>
-    <!-- Google Fonts: Cinzel (for Trajan vibe) and Montserrat -->
+    <!-- Google Fonts: Cinzel and Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;800&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
     <!-- Navigation -->
     <nav class="sticky top-0 bg-stoneCanvas/95 backdrop-blur-md z-50 border-b border-stone-200/60 shadow-sm">
         <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Brand Name (Using the Cinzel font to match your logo style) -->
+            <!-- Brand Name -->
             <div class="flex flex-col">
                 <span class="font-primary text-xl font-bold tracking-wider text-charcoal">THE CAKE FORGE</span>
                 <span class="font-secondary text-[8px] uppercase tracking-widest text-copper font-semibold -mt-1">Bespoke Cake Artistry</span>
@@ -56,7 +56,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section (Light, airy, with copper & forge glow accents) -->
+    <!-- Hero Section -->
     <header class="relative overflow-hidden py-24 md:py-32 px-6 border-b border-stone-200/40">
         <!-- Subtle industrial background glow -->
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,140,51,0.08),transparent_50%)]"></div>
@@ -98,7 +98,6 @@
             <!-- Cake Card 1 -->
             <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
                 <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <!-- Replace with real image -->
                     <img src="assets/images/cake1.jpg" alt="Sculpted Character Cake" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
                 </div>
@@ -111,7 +110,6 @@
             <!-- Cake Card 2 -->
             <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
                 <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <!-- Replace with real image -->
                     <img src="assets/images/cake2.jpg" alt="Structural Gravity Defying Cake" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
                 </div>
@@ -124,7 +122,6 @@
             <!-- Cake Card 3 -->
             <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
                 <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <!-- Replace with real image -->
                     <img src="assets/images/cake3.jpg" alt="Intricate Custom Occasion Cake" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
                 </div>
@@ -136,7 +133,7 @@
         </div>
     </section>
 
-    <!-- About Section (With a slight contrast background block) -->
+    <!-- About Section -->
     <section id="about" class="bg-stone-100/60 border-y border-stone-200/40 py-24 px-6">
         <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
             <div>
@@ -150,13 +147,12 @@
                 </p>
             </div>
             <div class="aspect-[4/3] bg-stone-200 border border-stone-300/40 overflow-hidden shadow-inner relative">
-                <!-- Replace with photo of your wife working/baking -->
                 <img src="assets/images/about-baker.jpg" alt="Inside the Cake Forge Kitchen" class="w-full h-full object-cover">
             </div>
         </div>
     </section>
 
-    <!-- Contact Form Section (White background card on the off-white canvas) -->
+    <!-- Contact Form Section -->
     <section id="contact" class="max-w-3xl mx-auto px-6 py-24">
         <div class="text-center mb-16">
             <h2 class="font-primary text-3xl font-bold text-charcoal tracking-wide">Commission a Masterpiece</h2>
@@ -206,11 +202,17 @@
                 <span class="text-[9px] uppercase tracking-widest text-copper font-semibold mt-1">Bespoke Cake Artistry</span>
             </div>
             <p class="font-light">&copy; 2026 The Cake Forge UK. Handcrafted with passion in Carlisle, Cumbria.</p>
+            
+            <!-- Staff Access Button -->
+            <button onclick="accessStaffHub()" class="text-stone-600 hover:text-copper transition duration-300 text-[10px] uppercase tracking-widest focus:outline-none">
+                Staff Portal
+            </button>
         </div>
     </footer>
 
-    <!-- Image Fallbacks -->
+    <!-- Interactive Scripts -->
     <script>
+        // Image Fallbacks
         document.querySelectorAll('img').forEach(img => {
             img.onerror = function() {
                 this.style.display = 'none';
@@ -218,6 +220,16 @@
                 parent.innerHTML = `<span class="text-xs text-stone-400 font-mono tracking-wider">[ Image Placeholder: ${this.alt} ]</span>`;
             };
         });
+
+        // Staff Hub PIN Protection Function
+        function accessStaffHub() {
+            const pin = prompt("Enter Staff Security PIN:");
+            if (pin === "1878") {
+                window.location.href = "hub/";
+            } else if (pin !== null) {
+                alert("Access Denied: Incorrect PIN");
+            }
+        }
     </script>
 </body>
 </html>
