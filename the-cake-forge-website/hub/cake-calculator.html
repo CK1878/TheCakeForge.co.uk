@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cake Forge - Professional Recipe Scaler</title>
+    <!-- Tailwind CSS for sleek, professional styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Print-friendly styles so bakers can take it to the kitchen */
+        @media print {
+            body { background: white; color: black; }
+            .no-print { display: none !important; }
+            .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen pb-24">
+
+    <!-- Header / Brand Navigation -->
+    <header class="bg-white border-b border-slate-200 py-5 px-4 mb-8 shadow-xs">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            
+            <!-- Logo Section based on "The Cake Forge" Alternate Layout -->
+            <div class="flex items-center gap-4">
+                <!-- Custom SVG recreating the anvil, tiered cake, and spark rays emblem -->
+                <svg class="w-14 h-14 text-slate-800 flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Circular Outer Border Ring -->
+                    <circle cx="50" cy="42" r="32" stroke-width="1.5" />
+                    
+                    <!-- Radiating Spark Lines -->
+                    <line x1="50" y1="5" x2="50" y2="9" />
+                    <line x1="24" y1="16" x2="27" y2="19" />
+                    <line x1="76" y1="16" x2="73" y2="19" />
+                    <line x1="13" y1="42" x2="17" y2="42" />
+                    <line x1="87" y1="42" x2="83" y2="42" />
+                    <line x1="20" y1="30" x2="24" y2="31" />
+                    <line x1="80" y1="30" x2="76" y2="31" />
+                    <line x1="22" y1="55" x2="26" y2="52" />
+                    <line x1="78" y1="55" x2="74" y2="52" />
+                    
+                    <!-- 3-Tiered Cake with Top Candle -->
+                    <line x1="50" y1="17" x2="50" y2="19" stroke-width="1.5" /> <!-- Flame/Wick -->
+                    <rect x="42" y="19" width="16" height="6" rx="1" fill="currentColor" /> <!-- Top Tier -->
+                    <rect x="38" y="25" width="24" height="7" rx="1" fill="currentColor" /> <!-- Mid Tier -->
+                    <rect x="34" y="32" width="32" height="9" rx="1" fill="currentColor" /> <!-- Base Tier -->
+                    
+                    <!-- Signature Anvil Base -->
+                    <path d="M 30,41 L 70,41 L 70,45 L 62,49 L 62,56 C 62,59 66,61 68,62 L 68,64 L 32,64 L 32,62 C 34,61 38,59 38,56 L 38,49 L 24,45 Z" fill="currentColor" stroke-linejoin="miter" />
+                </svg>
+                
+                <div>
+                    <h1 class="text-xl font-serif font-semibold tracking-wider text-slate-900 uppercase">The Cake Forge</h1>
+                    <p class="text-xs uppercase tracking-widest text-slate-400 font-medium">Bespoke Cake Artistry • Scaler</p>
+                </div>
+            </div>
+
+            <!-- Socials & Print Action Controls -->
+            <div class="flex items-center gap-4 no-print">
+                <nav class="flex gap-3 text-xs font-medium text-slate-400 border-r border-slate-200 pr-4 mr-1">
+                    <a href="#" class="hover:text-slate-600 transition-colors">Website</a>
+                    <a href="#" class="hover:text-slate-600 transition-colors">Instagram</a>
+                </nav>
+                <button onclick="window.print()" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow-xs transition-colors cursor-pointer tracking-wide">
+                    Print Sheet
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 grid gap-8">
+        
+        <!-- TIN CONFIGURATOR CARD -->
+        <section class="no-print bg-white rounded-xl border border-slate-200 p-6 shadow-xs grid md:grid-cols-2 gap-6 relative overflow-hidden">
+            <!-- Diagonal accent badge -->
+            <div class="absolute top-0 right-0 bg-slate-900 text-white text-xs font-mono py-1 px-4 rounded-bl-lg font-bold" id="factorBadge">
+                Scale: 1.00x
+            </div>
+
+            <!-- Original Tin -->
+            <div class="space-y-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">Original Tin (From Recipe)</h2>
+                <div class="flex flex-wrap gap-3">
+                    <div class="flex-1 min-w-[80px]">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Shape</label>
+                        <select id="origShape" onchange="toggleShapeInputs('orig'); calculateScale();" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                            <option value="round">Round</option>
+                            <option value="square">Square</option>
+                            <option value="rectangle">Rectangle</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[80px]">
+                        <label id="origDim1Label" class="block text-xs font-medium text-slate-500 mb-1">Diameter (in)</label>
+                        <input type="number" id="origSize" value="8" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                    <!-- Dedicated, explicitly labeled Width column for Rectangle -->
+                    <div id="origWidthContainer" class="flex-1 min-w-[80px] hidden">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Width (in)</label>
+                        <input type="number" id="origWidth" value="8" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                    <div class="flex-1 min-w-[80px]">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Depth (in)</label>
+                        <input type="number" id="origDepth" value="2" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Tin -->
+            <div class="space-y-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400">New Target Tin</h2>
+                <div class="flex flex-wrap gap-3">
+                    <div class="flex-1 min-w-[80px]">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Shape</label>
+                        <select id="newShape" onchange="toggleShapeInputs('new'); calculateScale();" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                            <option value="round">Round</option>
+                            <option value="square" selected>Square</option>
+                            <option value="rectangle">Rectangle</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-[80px]">
+                        <label id="newDim1Label" class="block text-xs font-medium text-slate-500 mb-1">Size (in)</label>
+                        <input type="number" id="newSize" value="8" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                    <!-- Dedicated, explicitly labeled Width column for Rectangle -->
+                    <div id="newWidthContainer" class="flex-1 min-w-[80px] hidden">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Width (in)</label>
+                        <input type="number" id="newWidth" value="8" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                    <div class="flex-1 min-w-[80px]">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">Depth (in)</label>
+                        <input type="number" id="newDepth" value="2" min="1" oninput="calculateScale()" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:outline-slate-400">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RECIPE CONTAINER -->
+        <div id="recipeContainer" class="space-y-6 print-card">
+            <!-- Dynamic Components will render here -->
+        </div>
+
+        <!-- DYNAMIC CONTEXTUAL MONETIZATION TRIGGER -->
+        <section class="no-print bg-amber-50/60 border border-amber-200/80 rounded-xl p-5 shadow-xs grid sm:grid-cols-3 gap-4 items-center">
+            <div class="sm:col-span-2">
+                <h3 class="text-sm font-bold text-amber-900 flex items-center gap-1.5" id="adTitle">
+                    🎂 Our Recommended Cake Tins
+                </h3>
+                <p class="text-xs text-amber-800 mt-1 leading-relaxed" id="adText">
+                    A perfect bake starts with the right gear. For completely straight sides, even heat distribution, and zero warping in the oven, these are the exact professional tins we use and swear by in our kitchen.
+                </p>
+            </div>
+            <div class="text-center sm:text-right">
+                <a href="https://www.amazon.co.uk/s?k=professional+cake+tins+baking&tag=Ck1878-21" id="adLink" target="_blank" rel="noopener" class="inline-block bg-amber-700 hover:bg-amber-800 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow-xs transition-colors cursor-pointer">
+                    View Our Favorite Cake Tins →
+                </a>
+            </div>
+        </section>
+
+        <!-- CONTROL BUTTONS -->
+        <section class="no-print flex flex-wrap gap-3 items-center justify-center border-t border-slate-200 pt-6">
+            <button onclick="addComponent('Custom Component')" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-sm font-medium py-2 px-4 rounded-lg shadow-xs transition-colors cursor-pointer">
+                + Add Custom Component
+            </button>
+            <button onclick="addComponent('Buttercream Preset', true, 'buttercream')" class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-sm font-medium py-2 px-4 rounded-lg shadow-xs transition-colors cursor-pointer">
+                + Add Buttercream Preset
+            </button>
+            <button onclick="addComponent('Ganache Preset', true, 'ganache')" class="bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 text-sm font-medium py-2 px-4 rounded-lg shadow-xs transition-colors cursor-pointer">
+                + Add Ganache Preset
+            </button>
+        </section>
+
+        <!-- PRINT ONLY FOOTER -->
+        <footer class="hidden print:block text-center text-xs text-slate-400 mt-12 border-t border-slate-200 pt-4">
+            Recipe scaled perfectly using the <strong>The Cake Forge</strong> toolkit.<br>
+            Saved you from a baking disaster? Consider tipping a bag of flour at: buymeacoffee.com/thecakeforge
+        </footer>
+
+    </main>
+
+    <!-- FLOATING "BUY ME A BAG OF FLOUR" TIPPING WIDGET -->
+    <div class="fixed bottom-4 right-4 z-50 no-print">
+        <a href="https://www.buymeacoffee.com/thecakeforge" target="_blank" rel="noopener" class="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-full shadow-lg transition-all hover:scale-105 cursor-pointer border border-slate-700/50">
+            <span class="text-sm">🌾</span> 
+            <span>Buy me a bag of flour</span>
+        </a>
+    </div>
+
+    <script>
+        // Core application state
+        let scalingFactor = 1.0;
+        let recipeData = [
+            {
+                id: "comp_" + Date.now(),
+                name: "Sponge Base",
+                ingredients: [
+                    { name: "Self-Raising Flour", amount: 200, unit: "g" },
+                    { name: "Unsalted Butter", amount: 200, unit: "g" },
+                    { name: "Caster Sugar", amount: 200, unit: "g" },
+                    { name: "Eggs (Medium)", amount: 4, unit: "pcs" }
+                ]
+            }
+        ];
+
+        // Standard presets recipes
+        const presets = {
+            buttercream: [
+                { name: "Icing Sugar", amount: 400, unit: "g" },
+                { name: "Unsalted Butter (Softened)", amount: 200, unit: "g" },
+                { name: "Vanilla Extract", amount: 1, unit: "tsp" },
+                { name: "Milk", amount: 2, unit: "tbsp" }
+            ],
+            ganache: [
+                { name: "Dark Chocolate Callets", amount: 300, unit: "g" },
+                { name: "Double Cream", amount: 150, unit: "ml" }
+            ]
+        };
+
+        // Fully separates and correctly updates labels and layouts for L & W
+        function toggleShapeInputs(prefix) {
+            const shape = document.getElementById(`${prefix}Shape`).value;
+            const widthContainer = document.getElementById(`${prefix}WidthContainer`);
+            const dim1Label = document.getElementById(`${prefix}Dim1Label`);
+
+            if (shape === 'rectangle') {
+                dim1Label.innerText = "Length (in)";
+                widthContainer.classList.remove('hidden');
+            } else if (shape === 'round') {
+                dim1Label.innerText = "Diameter (in)";
+                widthContainer.classList.add('hidden');
+            } else {
+                dim1Label.innerText = "Size (in)";
+                widthContainer.classList.add('hidden');
+            }
+        }
+
+        // Geometrical volume engine (Robust 2-dimension handling)
+        function calculateScale() {
+            const oShape = document.getElementById('origShape').value;
+            const oSize = parseFloat(document.getElementById('origSize').value) || 1;
+            const oWidth = parseFloat(document.getElementById('origWidth').value) || 1;
+            const oDepth = parseFloat(document.getElementById('origDepth').value) || 1;
+
+            const nShape = document.getElementById('newShape').value;
+            const nSize = parseFloat(document.getElementById('newSize').value) || 1;
+            const nWidth = parseFloat(document.getElementById('newWidth').value) || 1;
+            const nDepth = parseFloat(document.getElementById('newDepth').value) || 1;
+
+            // Handle Surface Area Math accurately
+            let oArea = 0;
+            if (oShape === 'round') {
+                oArea = Math.PI * Math.pow(oSize / 2, 2);
+            } else if (oShape === 'square') {
+                oArea = oSize * oSize;
+            } else if (oShape === 'rectangle') {
+                oArea = oSize * oWidth;
+            }
+
+            let nArea = 0;
+            if (nShape === 'round') {
+                nArea = Math.PI * Math.pow(nSize / 2, 2);
+            } else if (nShape === 'square') {
+                nArea = nSize * nSize;
+            } else if (nShape === 'rectangle') {
+                nArea = nSize * nWidth;
+            }
+
+            const oVolume = oArea * oDepth;
+            const nVolume = nArea * nDepth;
+
+            scalingFactor = nVolume / oVolume;
+
+            document.getElementById('factorBadge').innerText = `Scale: ${scalingFactor.toFixed(2)}x`;
+
+            updateOutputDisplay();
+        }
+
+        function addComponent(name, isPreset = false, presetKey = '') {
+            const compId = "comp_" + Date.now();
+            let ingredients = [];
+
+            if (isPreset && presets[presetKey]) {
+                ingredients = presets[presetKey].map(ing => ({ ...ing }));
+            } else {
+                ingredients = [{ name: "", amount: 0, unit: "g" }];
+            }
+
+            recipeData.push({ id: compId, name: name, ingredients: ingredients });
+            renderApp();
+            calculateScale();
+            evaluateAllKeywords();
+        }
+
+        function deleteComponent(compId) {
+            recipeData = recipeData.filter(c => c.id !== compId);
+            renderApp();
+            calculateScale();
+            evaluateAllKeywords();
+        }
+
+        function addIngredientRow(compId) {
+            const comp = recipeData.find(c => c.id === compId);
+            if (comp) {
+                comp.ingredients.push({ name: "", amount: 0, unit: "g" });
+                renderApp();
+                calculateScale();
+            }
+        }
+
+        function deleteIngredientRow(compId, ingIndex) {
+            const comp = recipeData.find(c => c.id === compId);
+            if (comp) {
+                comp.ingredients.splice(ingIndex, 1);
+                renderApp();
+                calculateScale();
+                evaluateAllKeywords();
+            }
+        }
+
+        function syncData(compId, index, field, value) {
+            const comp = recipeData.find(c => c.id === compId);
+            if (comp && comp.ingredients[index]) {
+                if (field === 'amount') {
+                    comp.ingredients[index][field] = parseFloat(value) || 0;
+                } else {
+                    comp.ingredients[index][field] = value;
+                    evaluateAllKeywords();
+                }
+                silentScaleCalculate();
+            }
+        }
+
+        function evaluateAllKeywords() {
+            let combinedText = "";
+            recipeData.forEach(c => {
+                combinedText += " " + c.name;
+                c.ingredients.forEach(i => {
+                    combinedText += " " + i.name;
+                });
+            });
+
+            const lowerText = combinedText.toLowerCase();
+            const adTitle = document.getElementById('adTitle');
+            const adText = document.getElementById('adText');
+            const adLink = document.getElementById('adLink');
+            
+            if (!adTitle || !adText || !adLink) return;
+
+            if (lowerText.includes('chocolate') || lowerText.includes('ganache') || lowerText.includes('callets') || lowerText.includes('cocoa')) {
+                adTitle.innerHTML = '🍫 Pro Chocolate Tip';
+                adText.innerText = 'For a perfectly smooth, glossy emulsion that sets beautifully, choose professional couverture chocolate callets rather than melting standard grocery blocks.';
+                adLink.innerText = 'View Premium Couverture Supplies →';
+                adLink.href = 'https://www.amazon.co.uk/s?k=couverture+chocolate+callets&tag=Ck1878-21';
+            } 
+            else if (lowerText.includes('buttercream') || lowerText.includes('icing') || lowerText.includes('frosting') || lowerText.includes('sugar')) {
+                adTitle.innerHTML = '🥣 Buttercream Tip';
+                adText.innerText = 'Tired of icing sugar clouds? Achieving a silky, ultra-smooth bakery-style frosting is significantly easier with a high-capacity planetary stand mixer.';
+                adLink.innerText = 'View Top Baker Stand Mixers →';
+                adLink.href = 'https://www.amazon.co.uk/s?k=electric+stand+mixer+baking&tag=Ck1878-21';
+            }
+            else {
+                adTitle.innerHTML = '🎂 Our Recommended Cake Tins';
+                adText.innerText = 'A perfect bake starts with the right gear. For completely straight sides, even heat distribution, and zero warping in the oven, these are the exact professional tins we use and swear by in our kitchen.';
+                adLink.innerText = 'View Our Favorite Cake Tins →';
+                adLink.href = 'https://www.amazon.co.uk/s?k=professional+cake+tins+baking&tag=Ck1878-21';
+            }
+        }
+
+        function syncComponentName(compId, value) {
+            const comp = recipeData.find(c => c.id === compId);
+            if (comp) {
+                comp.name = value;
+                evaluateAllKeywords();
+            }
+        }
+
+        function silentScaleCalculate() {
+            recipeData.forEach(comp => {
+                comp.ingredients.forEach((ing, idx) => {
+                    const outputEl = document.getElementById(`out_${comp.id}_${idx}`);
+                    if (outputEl) {
+                        const scaledVal = ing.amount * scalingFactor;
+                        outputEl.innerText = scaledVal % 1 === 0 ? scaledVal : scaledVal.toFixed(1);
+                    }
+                });
+            });
+        }
+
+        function updateOutputDisplay() {
+            silentScaleCalculate();
+        }
+
+        function renderApp() {
+            const container = document.getElementById('recipeContainer');
+            container.innerHTML = "";
+
+            if (recipeData.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
+                        No recipe components added yet. Click an option below to begin.
+                    </div>`;
+                return;
+            }
+
+            recipeData.forEach(comp => {
+                const card = document.createElement('section');
+                card.className = "bg-white border border-slate-200 rounded-xl p-6 shadow-xs relative print-card";
+                
+                let rowsHtml = "";
+                comp.ingredients.forEach((ing, idx) => {
+                    rowsHtml += `
+                    <div class="grid grid-cols-12 gap-2 items-center border-b border-slate-50 py-2 last:border-0">
+                        <div class="col-span-5 md:col-span-6">
+                            <input type="text" value="${ing.name}" placeholder="e.g. Caster Sugar" 
+                                oninput="syncData('${comp.id}', ${idx}, 'name', this.value)"
+                                class="w-full bg-transparent border-b border-transparent hover:border-slate-200 focus:border-slate-400 focus:outline-none p-1 text-sm">
+                        </div>
+                        <div class="col-span-3 md:col-span-2">
+                            <input type="number" value="${ing.amount || ''}" placeholder="0"
+                                oninput="syncData('${comp.id}', ${idx}, 'amount', this.value)"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-md p-1 text-sm text-center focus:outline-slate-300">
+                        </div>
+                        <div class="col-span-2 md:col-span-1">
+                            <select onchange="syncData('${comp.id}', ${idx}, 'unit', this.value)" class="w-full bg-transparent text-xs text-slate-500 focus:outline-none cursor-pointer">
+                                <option value="g" ${ing.unit === 'g' ? 'selected' : ''}>g</option>
+                                <option value="ml" ${ing.unit === 'ml' ? 'selected' : ''}>ml</option>
+                                <option value="pcs" ${ing.unit === 'pcs' ? 'selected' : ''}>pcs</option>
+                                <option value="tsp" ${ing.unit === 'tsp' ? 'selected' : ''}>tsp</option>
+                                <option value="tbsp" ${ing.unit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2 md:col-span-2 text-right font-semibold text-slate-900 pr-2">
+                            <span id="out_${comp.id}_${idx}">0</span><span class="text-xs font-normal text-slate-400 ml-0.5">${ing.unit}</span>
+                        </div>
+                        <div class="col-span-12 md:col-span-1 text-right no-print">
+                            <button onclick="deleteIngredientRow('${comp.id}', ${idx})" class="text-slate-300 hover:text-rose-500 text-xs p-1 transition-colors cursor-pointer" title="Remove ingredient">✕</button>
+                        </div>
+                    </div>`;
+                });
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 no-print">
+                        <input type="text" value="${comp.name}" oninput="syncComponentName('${comp.id}', this.value)" class="font-bold text-slate-800 text-lg border-b border-transparent hover:border-slate-200 focus:border-slate-400 focus:outline-none">
+                        <button onclick="deleteComponent('${comp.id}')" class="text-xs text-slate-400 hover:text-rose-600 transition-colors cursor-pointer">Delete Component</button>
+                    </div>
+                    <h2 class="hidden print:block font-bold text-slate-900 text-base mb-2 border-b border-slate-300 pb-1">${comp.name}</h2>
+                    
+                    <div class="space-y-1">
+                        <div class="grid grid-cols-12 gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider pb-1 border-b border-slate-100">
+                            <div class="col-span-5 md:col-span-6">Ingredient</div>
+                            <div class="col-span-3 md:col-span-2 text-center">Original</div>
+                            <div class="col-span-2 md:col-span-1">Unit</div>
+                            <div class="col-span-2 md:col-span-2 text-right pr-2">New Target</div>
+                        </div>
+                        ${rowsHtml}
+                    </div>
+
+                    <div class="mt-4 no-print">
+                        <button onclick="addIngredientRow('${comp.id}')" class="text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors cursor-pointer">+ Add Row</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Run application
+        renderApp();
+        // Initialize layout settings correctly on first paint
+        toggleShapeInputs('orig');
+        toggleShapeInputs('new');
+        calculateScale();
+    </script>
+</body>
+</html>

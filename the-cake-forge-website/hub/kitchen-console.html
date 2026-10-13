@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cake Forge - Advanced Kitchen Hub</title>
+    <!-- HTML5 QR / Barcode Scanner Engine -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface: #1e1e1e;
+            --surface-accent: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --brand-green: #00b0ff; 
+            --copper: #B87333;
+            --alert-amber: #ff9100;
+            --alert-red: #ff3d00;
+            --success: #00e676;
+            --border: #383838;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+
+        header {
+            background-color: var(--surface); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 2px solid var(--surface-accent); flex-wrap: wrap; gap: 10px;
+        }
+
+        .brand h1 { font-size: 1.3rem; color: var(--brand-green); letter-spacing: 1px; }
+        .brand p { font-size: 0.75rem; color: var(--text-muted); }
+        .header-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        
+        /* STAFF OPERATOR SELECTOR */
+        .staff-selector-box { background: var(--surface-accent); border: 1px solid var(--copper); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; }
+        .staff-selector-box label { font-size: 0.7rem; uppercase; font-weight: bold; color: var(--copper); }
+        .staff-select { background: #121212; color: #fff; border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+
+        #clock-container { text-align: right; }
+        #clock { font-size: 1.4rem; font-weight: bold; font-variant-numeric: tabular-nums; }
+        #date { font-size: 0.7rem; color: var(--text-muted); }
+
+        .mode-strip {
+            background: var(--surface); border-radius: 8px; border: 1px solid var(--border); padding: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
+        .mode-title { font-size: 0.85rem; font-weight: bold; color: var(--brand-green); text-transform: uppercase; }
+        .mode-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-mode { background: var(--surface-accent); color: var(--text-muted); border: 1px solid var(--border); padding: 8px 12px; font-size: 0.8rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; }
+        .btn-mode.active { background: var(--brand-green); color: #000; border-color: var(--brand-green); }
+
+        main { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; }
+        @media (min-width: 900px) { main { grid-template-columns: 1fr 1.1fr; } }
+
+        .panel { background-color: var(--surface); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); gap: 5px; }
+        h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .timer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+        .timer-card { background: var(--surface-accent); padding: 12px; border-radius: 6px; border-left: 4px solid var(--text-muted); }
+        .timer-card.active { border-left-color: var(--brand-green); }
+        .timer-card.alarm { border-left-color: var(--alert-red); animation: flash-red 1s infinite alternate; }
+        @keyframes flash-red { from { background-color: var(--surface-accent); } to { background-color: rgba(255, 61, 0, 0.2); } }
+
+        .timer-title { font-weight: bold; font-size: 0.85rem; }
+        .timer-time { font-size: 1.3rem; font-weight: bold; font-variant-numeric: tabular-nums; margin: 4px 0; }
+        .timer-controls button { background: #333; color: white; border: none; padding: 6px 10px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; margin-right: 4px; margin-top: 4px; }
+
+        .temp-row { background: var(--surface-accent); padding: 12px 15px; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .temp-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .btn-temp { background: #333; color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .temp-display { font-size: 1.4rem; font-weight: bold; min-width: 75px; text-align: center; font-variant-numeric: tabular-nums; }
+
+        .deviation-panel { background-color: rgba(255, 145, 0, 0.1); border: 1px solid var(--alert-amber); border-radius: 6px; padding: 10px; margin-bottom: 10px; display: none; }
+        .deviation-panel textarea { width: 100%; background: #121212; border: 1px solid var(--border); color: white; padding: 8px; border-radius: 4px; resize: none; font-size: 0.85rem; }
+
+        .checklist-item { display: flex; align-items: center; padding: 12px; background: var(--surface-accent); margin-bottom: 8px; border-radius: 6px; cursor: pointer; }
+        .checklist-item.checked { border-left: 4px solid var(--success); opacity: 0.6; }
+        .checkbox-mock { width: 22px; height: 22px; border: 2px solid #555; border-radius: 4px; margin-right: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: bold;}
+        .checklist-item.checked .checkbox-mock { border-color: var(--success); background-color: var(--success); color: black; }
+        .checklist-item.checked .checkbox-mock::after { content: "✓"; font-size: 0.85rem; }
+        .task-text { font-size: 0.85rem; flex-grow: 1; pointer-events: none; }
+        .timestamp { font-size: 0.75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+        .add-task-box { background: var(--surface-accent); padding: 10px; border-radius: 6px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .add-task-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .add-task-input { flex-grow: 1; background: #121212; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; font-size: 0.85rem; min-width: 140px; }
+        .add-task-select { background: #121212; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; font-size: 0.85rem; }
+
+        .spreadsheet-container { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; margin-top: 5px; }
+        table.ledger { width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left; min-width: 550px; }
+        table.ledger th { background-color: #252525; color: var(--text-main); padding: 10px 8px; font-weight: 600; border-bottom: 2px solid var(--border); border-right: 1px solid var(--border); }
+        table.ledger td { padding: 10px 8px; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); background-color: var(--surface); }
+        table.ledger tr:nth-child(even) td { background-color: #222; }
+
+        .btn-action { background-color: var(--brand-green); color: #000; border: none; padding: 10px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .btn-secondary { background-color: #444; color: #fff; border: none; padding: 10px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .btn-print { background-color: var(--copper); color: #fff; border: none; padding: 4px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
+
+        #camera-scanner-view { width: 100%; max-width: 400px; margin: 8px 0; border-radius: 6px; overflow: hidden; border: 2px solid var(--brand-green); display: none; }
+
+        .ingredient-tag { display: inline-block; background: #333; color: var(--brand-green); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin: 2px 2px 2px 0; border: 1px solid #444; }
+
+        .allergen-chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .allergen-chip { background: #121212; color: var(--text-muted); border: 1px solid var(--border); padding: 4px 10px; font-size: 0.75rem; border-radius: 12px; cursor: pointer; user-select: none; }
+        .allergen-chip.selected { background: var(--alert-red); color: white; border-color: var(--alert-red); font-weight: bold; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+        .modal-card { background: var(--surface); border: 2px solid var(--brand-green); border-radius: 8px; width: 100%; max-width: 500px; padding: 20px; display: flex; flex-direction: column; gap: 14px; max-height: 90vh; overflow-y: auto; }
+        .modal-card h3 { color: var(--brand-green); font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+        .modal-form-group { display: flex; flex-direction: column; gap: 4px; }
+        .modal-form-group label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
+
+        /* PRINT STYLES FOR THERMAL LABEL & PAPER COPIES */
+        @media print {
+            body { background-color: #fff !important; color: #000 !important; font-size: 10pt; }
+            header, .mode-strip, .add-task-box, .btn-action, .btn-secondary, .btn-temp, .header-actions, .timer-controls, .add-task-row, .modal-overlay, .btn-print { display: none !important; }
+            main { display: block !important; }
+            .panel { background: #fff !important; color: #000 !important; border: 1px solid #ccc !important; margin-bottom: 15px; page-break-inside: avoid; }
+            .panel-header h2 { color: #000 !important; }
+            .checklist-item { background: #fff !important; color: #000 !important; border: 1px solid #eee !important; }
+            table.ledger th { background-color: #eee !important; color: #000 !important; }
+            table.ledger td { background-color: #fff !important; color: #000 !important; }
+            .print-header { display: block !important; margin-bottom: 20px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+        }
+        .print-header { display: none; }
+        
+        /* THERMAL LABEL PRINT STYLING (HIDDEN ON SCREEN) */
+        #thermal-print-area { display: none; }
+        @media print {
+            body.printing-label * { display: none !important; }
+            body.printing-label #thermal-print-area, body.printing-label #thermal-print-area * { display: block !important; }
+            body.printing-label #thermal-print-area { position: absolute; left: 0; top: 0; width: 58mm; padding: 4mm; font-family: monospace; font-size: 10pt; line-height: 1.2; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="print-header">
+        <h1 style="font-size:1.6rem;">THE CAKE FORGE - DAILY HACCP & SFBB LOG</h1>
+        <p id="print-date-str" style="font-size:0.9rem; margin-top:4px;"></p>
+    </div>
+
+    <!-- Hidden Thermal Label Printing Canvas -->
+    <div id="thermal-print-area"></div>
+
+    <header>
+        <div class="brand">
+            <h1>THE CAKE FORGE</h1>
+            <p>Integrated HACCP Kitchen Console</p>
+        </div>
+
+        <div class="header-actions">
+            <!-- Active Staff Operator Toggle -->
+            <div class="staff-selector-box">
+                <label for="active-staff-select">Operator:</label>
+                <select id="active-staff-select" class="staff-select" onchange="updateActiveStaff()">
+                    <option value="Primary Baker">Primary Baker</option>
+                    <option value="Secondary Baker">Secondary Baker</option>
+                </select>
+            </div>
+
+            <button class="btn-action" onclick="exportDailyPdf()">🖨️ Export Daily Log</button>
+            <div id="clock-container">
+                <div id="clock">00:00:00</div>
+                <div id="date">Loading...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="mode-strip">
+        <div class="mode-title">SFBB Operational State:</div>
+        <div class="mode-buttons">
+            <button class="btn-mode active" id="mode-standard" onclick="setOperationalMode('STANDARD')">Standard Session</button>
+            <button class="btn-mode" id="mode-peak" onclick="setOperationalMode('PEAK')">🔥 Peak Production</button>
+            <button class="btn-mode" id="mode-warm" onclick="setOperationalMode('WARM')">☀️ Warm Weather Mode</button>
+        </div>
+    </div>
+
+    <main>
+        <!-- COLD HOLDING LOG -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Cold Holding Audit Log</h2>
+            </div>
+            <div>
+                <div class="temp-row">
+                    <div>
+                        <h4 style="font-size:0.95rem;">Dedicated Business Fridge</h4>
+                        <p style="font-size:0.75rem; color:var(--text-muted);">Target: 0.0°C to 5.0°C</p>
+                    </div>
+                    <div class="temp-controls">
+                        <button class="btn-temp" onclick="adjustTemp('fridge', -0.5)">-</button>
+                        <div class="temp-display" id="fridge-val">4.0°C</div>
+                        <button class="btn-temp" onclick="adjustTemp('fridge', 0.5)">+</button>
+                        <button class="btn-action" onclick="logTempEntry('fridge')">Log Temp & Audit</button>
+                    </div>
+                </div>
+                <div class="deviation-panel" id="fridge-deviation">
+                    <p style="font-size:0.8rem; color:var(--alert-amber); margin-bottom:5px;">⚠️ DEVIATION (>5.0°C) - Mandatory Action Log Required:</p>
+                    <textarea id="fridge-action" placeholder="Logged action taken..."></textarea>
+                </div>
+
+                <div class="temp-row">
+                    <div>
+                        <h4 style="font-size:0.95rem;">Dedicated Business Freezer</h4>
+                        <p style="font-size:0.75rem; color:var(--text-muted);">Target: Below -18.0°C</p>
+                    </div>
+                    <div class="temp-controls">
+                        <button class="btn-temp" onclick="adjustTemp('freezer', -1)">-</button>
+                        <div class="temp-display" id="freezer-val">-18.0°C</div>
+                        <button class="btn-temp" onclick="adjustTemp('freezer', 1)">+</button>
+                        <button class="btn-action" onclick="logTempEntry('freezer')">Log Temp & Audit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TIMERS & AUDIT RESET LOG -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Interval Timers & Automated Resets</h2>
+            </div>
+            <div class="timer-grid">
+                <div class="timer-card active" id="timer-fridge">
+                    <div class="timer-title">Fridge Audit</div>
+                    <div class="timer-time" id="time-fridge">12:00:00</div>
+                    <div class="timer-controls"><button onclick="triggerRoutineReset('fridge')">Reset</button></div>
+                </div>
+                <div class="timer-card active" id="timer-sanitize">
+                    <div class="timer-title">Sanitisation</div>
+                    <div class="timer-time" id="time-sanitize">02:00:00</div>
+                    <div class="timer-controls"><button onclick="triggerRoutineReset('sanitize')">Reset</button></div>
+                </div>
+                <div class="timer-card" id="timer-bake">
+                    <div class="timer-title">Oven / Bake</div>
+                    <div class="timer-time" id="time-bake">00:45:00</div>
+                    <div class="timer-controls">
+                        <button onclick="adjustBakeTimer(5)">+5m</button>
+                        <button onclick="toggleBakeTimer()" id="btn-bake-toggle">Start</button>
+                    </div>
+                </div>
+                <div class="timer-card active" id="timer-waste">
+                    <div class="timer-title">Bin Pull</div>
+                    <div class="timer-time" id="time-waste">04:00:00</div>
+                    <div class="timer-controls"><button onclick="triggerRoutineReset('waste')">Reset</button></div>
+                </div>
+            </div>
+
+            <div class="spreadsheet-container" style="margin-top: 15px;">
+                <h4 style="font-size:0.75rem; color:var(--brand-green); margin: 8px 0;">INTERVAL RESET TIMESTAMP AUDIT</h4>
+                <table class="ledger">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Time</th>
+                            <th>Action Recorded</th>
+                            <th style="width: 25%;">Logged By</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routine-log-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- OPENED GOODS & BARCODE TRACKER -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Opened Goods & Barcode Tracker</h2>
+            </div>
+
+            <div class="add-task-box">
+                <span style="font-size:0.75rem; font-weight:bold; color:var(--brand-green);">+ OPEN NEW INGREDIENT (Scan Barcode or Type Name)</span>
+                <div class="add-task-row">
+                    <input type="text" id="barcode-input" class="add-task-input" placeholder="Scan Barcode (EAN) or Type Name..." style="flex-grow:2;">
+                    <button class="btn-action" onclick="fetchAndReviewProduct()">Scan & Review</button>
+                    <button class="btn-secondary" id="btn-cam-toggle" onclick="toggleCameraScanner()">📷 Camera</button>
+                </div>
+                <div id="camera-scanner-view"></div>
+            </div>
+
+            <div class="spreadsheet-container">
+                <table class="ledger">
+                    <thead>
+                        <tr>
+                            <th>Opened</th>
+                            <th>Ingredient</th>
+                            <th>14 Allergens</th>
+                            <th>Calculated Expiry</th>
+                            <th>Staff</th>
+                            <th>Label</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pantry-log-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- BATCH PRODUCTION LOG WITH TRACEABILITY -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Cooked / Made Batch Records (Traceability)</h2>
+            </div>
+
+            <div class="add-task-box">
+                <span style="font-size:0.75rem; font-weight:bold; color:var(--brand-green);">+ LOG NEW BATCH (Sponges / Ganache / Fillings)</span>
+                <div class="add-task-row">
+                    <input type="text" id="batch-item" class="add-task-input" placeholder="e.g., Vanilla Sponge / Ganache">
+                    <input type="text" id="batch-code" class="add-task-input" placeholder="Batch ID / Lot #" style="max-width:110px;">
+                    <input type="text" id="batch-temp" class="add-task-input" placeholder="Core Temp (°C)" style="max-width:100px;">
+                    <select id="batch-storage" class="add-task-select">
+                        <option value="Ambient">Ambient</option>
+                        <option value="Fridge">Fridge</option>
+                        <option value="Freezer">Freezer</option>
+                    </select>
+                </div>
+                
+                <div style="margin-top: 4px;">
+                    <label style="font-size:0.75rem; color:var(--text-muted); display:block; margin-bottom:4px;">
+                        Linked Opened Ingredients (Hold Ctrl/Cmd to select multiple):
+                    </label>
+                    <select id="batch-ingredients-select" multiple class="add-task-select" style="width:100%; height:70px; background:#121212;">
+                        <option disabled style="color:#666;">No opened goods logged yet</option>
+                    </select>
+                </div>
+
+                <div style="text-align:right; margin-top:4px;">
+                    <button class="btn-action" onclick="logNewBatch()">Log Traceable Batch</button>
+                </div>
+            </div>
+
+            <div class="spreadsheet-container">
+                <table class="ledger">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Item Description</th>
+                            <th>Batch ID</th>
+                            <th>Used Ingredients</th>
+                            <th>Staff</th>
+                            <th>Label</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-log-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- DYNAMIC CHECKLIST -->
+        <section class="panel">
+            <div class="panel-header">
+                <h2>SFBB Safety Checklists</h2>
+                <span id="current-day-label" style="font-size:0.8rem; color:var(--brand-green); font-weight:bold;">---</span>
+            </div>
+
+            <div class="add-task-box">
+                <span style="font-size:0.75rem; font-weight:bold; color:var(--brand-green);">+ ADD CUSTOM CHECKLIST ITEM</span>
+                <div class="add-task-row">
+                    <input type="text" id="new-task-text" class="add-task-input" placeholder="e.g. Isomalt temp check...">
+                    <button class="btn-action" onclick="addCustomTask()">Add</button>
+                </div>
+            </div>
+
+            <div id="checklist-container"></div>
+        </section>
+    </main>
+
+    <!-- PRODUCT REVIEW & EDIT MODAL -->
+    <div class="modal-overlay" id="product-modal" style="display: none;">
+        <div class="modal-card">
+            <h3>Review / Edit Product Details</h3>
+            
+            <div class="modal-form-group">
+                <label>Product Name</label>
+                <input type="text" id="modal-name" class="add-task-input" placeholder="e.g., Two Chicks Pasteurised Egg Whites">
+            </div>
+
+            <div class="modal-form-group">
+                <label>Barcode / EAN</label>
+                <input type="text" id="modal-code" class="add-task-input">
+            </div>
+
+            <div class="modal-form-group">
+                <label>Shelf Life Method</label>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn-mode active" id="btn-mode-days" onclick="setExpiryInputMode('days')">Days / Quick Presets</button>
+                    <button type="button" class="btn-mode" id="btn-mode-date" onclick="setExpiryInputMode('date')">Specific Calendar Date</button>
+                </div>
+            </div>
+
+            <div class="modal-form-group" id="container-expiry-days">
+                <label>Shelf Life (Days)</label>
+                <input type="number" id="modal-pao-days" class="add-task-input" value="7" style="max-width: 140px;">
+                <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(7)">7 Days (Egg Whites)</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(14)">14 Days</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(30)">1 Month (30d)</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(90)">3 Months (90d)</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(365)">1 Year (365d)</button>
+                </div>
+            </div>
+
+            <div class="modal-form-group" id="container-expiry-date" style="display:none;">
+                <label>Exact Expiry Date</label>
+                <input type="date" id="modal-pao-date" class="add-task-input" style="max-width: 200px; color-scheme: dark;">
+            </div>
+
+            <div class="modal-form-group">
+                <label>Flagged Allergens (Click to Toggle)</label>
+                <div class="allergen-chip-grid" id="modal-allergen-grid"></div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                <button class="btn-secondary" onclick="closeProductModal()">Cancel</button>
+                <button class="btn-action" onclick="saveProductFromModal()">Confirm & Save to Opened Ledger</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE FIRESTORE SDK MODULES -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            onSnapshot, 
+            query, 
+            orderBy, 
+            enableIndexedDbPersistence 
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Pre-wired Firebase Credentials
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdrhFnnekXeZRuIGLcjeDwGtoBaQByck8",
+            authDomain: "cake-forge-haccp.firebaseapp.com",
+            projectId: "cake-forge-haccp",
+            storageBucket: "cake-forge-haccp.firebasestorage.app",
+            messagingSenderId: "759565273648",
+            appId: "1:759565273648:web:6c16761183727fc87a7bf5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Enable Offline Persistence Cache
+        enableIndexedDbPersistence(db).catch((err) => {
+            console.warn("Offline persistence warning:", err.code);
+        });
+
+        // Global DB references
+        window.db = db;
+        window.dbCollections = {
+            routineLogs: collection(db, "routineLogs"),
+            openedIngredients: collection(db, "openedIngredients"),
+            batchLogs: collection(db, "batchLogs")
+        };
+
+        // Real-Time Listeners across all devices
+        onSnapshot(query(window.dbCollections.routineLogs, orderBy("timestamp", "desc")), (snapshot) => {
+            state.routineAuditLog = snapshot.docs.map(doc => doc.data());
+            renderRoutineLogsTable();
+        });
+
+        onSnapshot(query(window.dbCollections.openedIngredients, orderBy("timestamp", "desc")), (snapshot) => {
+            state.openedIngredients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderPantryLog();
+            updateBatchIngredientsDropdown();
+        });
+
+        onSnapshot(query(window.dbCollections.batchLogs, orderBy("timestamp", "desc")), (snapshot) => {
+            state.batches = snapshot.docs.map(doc => doc.data());
+            renderBatchLog();
+        });
+    </script>
+
+    <script>
+        const BARCODE_DB = {
+            "5010029000148": { name: "Self Raising Flour 1.5kg", defaultDays: 90, allergens: ["Gluten"] },
+            "5000128001234": { name: "Callebaut 811 Dark Callets", defaultDays: 365, allergens: ["Soya", "Milk"] },
+            "5010011000010": { name: "Icing Sugar 1kg", defaultDays: 180, allergens: [] },
+            "5060105310002": { name: "Two Chicks Liquid Egg Whites", defaultDays: 7, allergens: ["Eggs"] }
+        };
+
+        const ALLERGEN_LIST = [
+            "Eggs", "Milk", "Gluten", "Soya", "Nuts", "Peanuts", "Sesame", 
+            "Celery", "Mustard", "Lupin", "Sulphites", "Fish", "Crustaceans", "Molluscs"
+        ];
+
+        let modalSelectedAllergens = new Set();
+        let html5QrCode = null;
+        let activeExpiryMode = 'days';
+        let activeStaff = "Primary Baker";
+
+        let state = {
+            mode: "STANDARD",
+            fridgeTemp: 4.0, 
+            freezerTemp: -18.0,
+            fridgeAction: "",
+            completedTasks: {},
+            customTasks: [],
+            batches: [],
+            openedIngredients: [],
+            routineAuditLog: [],
+            timers: { fridge: 12 * 3600, sanitize: 2 * 3600, waste: 4 * 3600, bake: 45 * 60 },
+            bakeTimerRunning: false,
+            intervals: { fridge: 12, sanitize: 2, waste: 4 },
+            preSessionChecklist: [
+                "Clear family items and personal belongings out of production spaces.",
+                "Verify absolute pet isolation from kitchen and food storage zones.",
+                "Disinfect primary food contact surfaces & equipment (BS EN 1276).",
+                "Verify clean chef whites/apron put on & hair tied back/covered.",
+                "Handwashing sink stocked with warm water, anti-bacterial soap, & paper towels.",
+                "Fridge & freezer operating within target temp ranges (Fridge <5°C, Freezer <-18°C).",
+                "Verify clean mixing bowls, pans, and staging gear ready."
+            ],
+            closingChecklist: [
+                "All food covered, labeled, and dated before cold holding storage.",
+                "Sanitise all food contact surfaces, mixers, and touchpoints (BS EN 1276).",
+                "Empty food waste and take bin liner to external waste bin.",
+                "Sweep and mop kitchen floor.",
+                "Ensure all appliances (ovens, hobs, warmers) are safely turned off."
+            ]
+        };
+
+        function updateActiveStaff() {
+            activeStaff = document.getElementById('active-staff-select').value;
+        }
+
+        // Live Clock Engine
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour12: false });
+            const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            document.getElementById('clock').textContent = timeStr;
+            document.getElementById('date').textContent = dateStr;
+            document.getElementById('current-day-label').textContent = dateStr.toUpperCase();
+            document.getElementById('print-date-str').textContent = dateStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function setOperationalMode(mode) {
+            state.mode = mode;
+            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+            
+            if (mode === 'STANDARD') {
+                document.getElementById('mode-standard').classList.add('active');
+                state.intervals = { fridge: 12, sanitize: 2, waste: 4 };
+            } else if (mode === 'PEAK') {
+                document.getElementById('mode-peak').classList.add('active');
+                state.intervals = { fridge: 8, sanitize: 1.5, waste: 3 };
+            } else if (mode === 'WARM') {
+                document.getElementById('mode-warm').classList.add('active');
+                state.intervals = { fridge: 4, sanitize: 1, waste: 2 };
+            }
+
+            state.timers.fridge = state.intervals.fridge * 3600;
+            state.timers.sanitize = state.intervals.sanitize * 3600;
+            state.timers.waste = state.intervals.waste * 3600;
+
+            renderTimers();
+            logRoutineAction(`SFBB Mode set to ${mode}. Timers updated.`);
+        }
+
+        function adjustTemp(type, delta) {
+            if (type === 'fridge') {
+                state.fridgeTemp = Math.round((state.fridgeTemp + delta) * 10) / 10;
+                document.getElementById('fridge-val').textContent = state.fridgeTemp.toFixed(1) + '°C';
+                document.getElementById('fridge-deviation').style.display = state.fridgeTemp > 5.0 ? 'block' : 'none';
+            } else if (type === 'freezer') {
+                state.freezerTemp = Math.round((state.freezerTemp + delta) * 10) / 10;
+                document.getElementById('freezer-val').textContent = state.freezerTemp.toFixed(1) + '°C';
+            }
+        }
+
+        function logTempEntry(type) {
+            if (type === 'fridge') {
+                let note = "";
+                if (state.fridgeTemp > 5.0) {
+                    const actionInput = document.getElementById('fridge-action').value.trim();
+                    if (!actionInput) return alert("Mandatory Action Log Required for Fridge Temp > 5.0°C!");
+                    note = ` | Action Taken: ${actionInput}`;
+                }
+                logRoutineAction(`Business Fridge Logged @ ${state.fridgeTemp.toFixed(1)}°C${note}`);
+                triggerRoutineReset('fridge');
+            } else if (type === 'freezer') {
+                logRoutineAction(`Business Freezer Logged @ ${state.freezerTemp.toFixed(1)}°C`);
+            }
+        }
+
+        setInterval(() => {
+            ['fridge', 'sanitize', 'waste'].forEach(t => { if (state.timers[t] > 0) state.timers[t]--; });
+            if (state.bakeTimerRunning && state.timers.bake > 0) state.timers.bake--;
+            renderTimers();
+        }, 1000);
+
+        function renderTimers() {
+            ['fridge', 'sanitize', 'waste', 'bake'].forEach(t => {
+                const sec = state.timers[t];
+                const h = Math.floor(sec / 3600).toString().padStart(2, '0');
+                const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
+                const s = (sec % 60).toString().padStart(2, '0');
+                
+                const elTime = document.getElementById(`time-${t}`);
+                const elCard = document.getElementById(`timer-${t}`);
+                if (elTime) elTime.textContent = `${h}:${m}:${s}`;
+                if (elCard) elCard.classList.toggle('alarm', sec === 0);
+            });
+        }
+
+        function triggerRoutineReset(type) {
+            state.timers[type] = (state.intervals[type] || 2) * 3600;
+            const names = { fridge: 'Fridge Audit Logged & Reset', sanitize: 'Sanitisation Complete & Reset', waste: 'Bin Pull Executed & Reset' };
+            logRoutineAction(names[type] || `${type} reset`);
+            renderTimers();
+        }
+
+        function adjustBakeTimer(mins) { state.timers.bake += mins * 60; renderTimers(); }
+        function toggleBakeTimer() {
+            state.bakeTimerRunning = !state.bakeTimerRunning;
+            document.getElementById('btn-bake-toggle').textContent = state.bakeTimerRunning ? 'Pause' : 'Start';
+            document.getElementById('timer-bake').classList.toggle('active', state.bakeTimerRunning);
+        }
+
+        async function logRoutineAction(actionText) {
+            const time = new Date().toLocaleTimeString([], { hour12: false });
+            const entry = { time, actionText, staff: activeStaff, timestamp: Date.now() };
+            
+            if (window.dbCollections) {
+                try { await addDoc(window.dbCollections.routineLogs, entry); } catch (e) { console.error(e); }
+            } else {
+                state.routineAuditLog.unshift(entry);
+                renderRoutineLogsTable();
+            }
+        }
+
+        function renderRoutineLogsTable() {
+            const tbody = document.getElementById('routine-log-body');
+            tbody.innerHTML = state.routineAuditLog.map(r => `
+                <tr>
+                    <td><strong>${r.time}</strong></td>
+                    <td>${r.actionText}</td>
+                    <td><span class="ingredient-tag" style="color:#fff;">${r.staff || 'Staff'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function setExpiryInputMode(mode) {
+            activeExpiryMode = mode;
+            document.getElementById('btn-mode-days').classList.toggle('active', mode === 'days');
+            document.getElementById('btn-mode-date').classList.toggle('active', mode === 'date');
+            document.getElementById('container-expiry-days').style.display = mode === 'days' ? 'flex' : 'none';
+            document.getElementById('container-expiry-date').style.display = mode === 'date' ? 'flex' : 'none';
+        }
+
+        function setPresetDays(days) {
+            document.getElementById('modal-pao-days').value = days;
+            setExpiryInputMode('days');
+        }
+
+        async function fetchAndReviewProduct() {
+            const input = document.getElementById('barcode-input').value.trim();
+            if (!input) return alert("Please scan or enter product name/EAN code.");
+
+            let name = input, code = input, defaultDays = 7;
+            modalSelectedAllergens.clear();
+
+            if (BARCODE_DB[input]) {
+                name = BARCODE_DB[input].name;
+                defaultDays = BARCODE_DB[input].defaultDays || 7;
+                (BARCODE_DB[input].allergens || []).forEach(a => modalSelectedAllergens.add(a));
+            } else if (/^\d+$/.test(input)) {
+                try {
+                    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${input}.json`);
+                    const data = await res.json();
+                    if (data.status === 1) {
+                        name = data.product.product_name || input;
+                        if (data.product.allergens_tags) {
+                            data.product.allergens_tags.forEach(tag => {
+                                const clean = tag.replace('en:', '').replace(/-/g, ' ');
+                                ALLERGEN_LIST.forEach(alg => { if (clean.toLowerCase().includes(alg.toLowerCase())) modalSelectedAllergens.add(alg); });
+                            });
+                        }
+                    }
+                } catch (e) { console.warn("API lookup failed."); }
+            }
+
+            document.getElementById('modal-name').value = name;
+            document.getElementById('modal-code').value = code;
+            document.getElementById('modal-pao-days').value = defaultDays;
+            
+            const defaultDate = new Date();
+            defaultDate.setDate(defaultDate.getDate() + defaultDays);
+            document.getElementById('modal-pao-date').value = defaultDate.toISOString().split('T')[0];
+            
+            setExpiryInputMode('days');
+            renderModalAllergenGrid();
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function renderModalAllergenGrid() {
+            document.getElementById('modal-allergen-grid').innerHTML = ALLERGEN_LIST.map(alg => {
+                const isSelected = modalSelectedAllergens.has(alg);
+                return `<div class="allergen-chip ${isSelected ? 'selected' : ''}" onclick="toggleModalAllergen('${alg}')">${alg}</div>`;
+            }).join('');
+        }
+
+        function toggleModalAllergen(alg) {
+            if (modalSelectedAllergens.has(alg)) modalSelectedAllergens.delete(alg);
+            else modalSelectedAllergens.add(alg);
+            renderModalAllergenGrid();
+        }
+
+        function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
+
+        async function saveProductFromModal() {
+            const name = document.getElementById('modal-name').value.trim();
+            const code = document.getElementById('modal-code').value.trim();
+            let expiryDate = new Date();
+            
+            if (activeExpiryMode === 'days') {
+                expiryDate.setDate(expiryDate.getDate() + (parseInt(document.getElementById('modal-pao-days').value) || 1));
+            } else {
+                const dateVal = document.getElementById('modal-pao-date').value;
+                if (!dateVal) return alert("Select a valid expiry date.");
+                expiryDate = new Date(dateVal);
+            }
+
+            if (!name) return alert("Product name required.");
+
+            const now = new Date();
+            const newItem = {
+                openedDate: now.toLocaleDateString('en-GB'),
+                name: name,
+                code: code,
+                allergens: Array.from(modalSelectedAllergens),
+                expiryDate: expiryDate.toLocaleDateString('en-GB'),
+                expiryTimestamp: expiryDate.getTime(),
+                staff: activeStaff,
+                timestamp: Date.now()
+            };
+
+            if (window.dbCollections) {
+                try { await addDoc(window.dbCollections.openedIngredients, newItem); } catch (e) { console.error(e); }
+            } else {
+                state.openedIngredients.unshift(newItem);
+                renderPantryLog();
+            }
+
+            closeProductModal();
+            document.getElementById('barcode-input').value = "";
+            logRoutineAction(`Opened: ${name} (Expires: ${newItem.expiryDate})`);
+        }
+
+        function renderPantryLog() {
+            const tbody = document.getElementById('pantry-log-body');
+            const now = new Date().getTime();
+
+            tbody.innerHTML = state.openedIngredients.map((item, idx) => {
+                const isExpired = now > item.expiryTimestamp;
+                const allergenTags = item.allergens.length > 0 ? 
+                    item.allergens.map(a => `<span class="ingredient-tag" style="color:var(--alert-red); border-color:var(--alert-red);">${a}</span>`).join('') : 
+                    '<span style="color:var(--text-muted); font-size:0.7rem;">None</span>';
+
+                return `
+                    <tr>
+                        <td>${item.openedDate}</td>
+                        <td><strong>${item.name}</strong> ${isExpired ? '<span style="color:var(--alert-red);">(EXPIRED)</span>' : ''}</td>
+                        <td>${allergenTags}</td>
+                        <td>${item.expiryDate}</td>
+                        <td><span class="ingredient-tag" style="color:#fff;">${item.staff || 'Staff'}</span></td>
+                        <td><button class="btn-print" onclick="printThermalLabel('pantry', ${idx})">🖨️ Label</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateBatchIngredientsDropdown() {
+            const select = document.getElementById('batch-ingredients-select');
+            if (state.openedIngredients.length === 0) {
+                select.innerHTML = '<option disabled style="color:#666;">No opened goods logged yet</option>';
+                return;
+            }
+            select.innerHTML = state.openedIngredients.map(item => `
+                <option value="${item.name}">${item.name} (Opened: ${item.openedDate})</option>
+            `).join('');
+        }
+
+        async function logNewBatch() {
+            const item = document.getElementById('batch-item').value.trim();
+            const code = document.getElementById('batch-code').value.trim();
+            const temp = document.getElementById('batch-temp').value.trim();
+            const storage = document.getElementById('batch-storage').value;
+            
+            const select = document.getElementById('batch-ingredients-select');
+            const selectedOptions = Array.from(select.selectedOptions);
+            const linkedNames = selectedOptions.map(o => o.value);
+
+            if (!item || !code) return alert("Enter Description and Batch/Lot Number.");
+
+            const timeStr = new Date().toLocaleTimeString([], { hour12: false });
+            const newBatch = {
+                time: timeStr,
+                date: new Date().toLocaleDateString('en-GB'),
+                item: item,
+                code: code,
+                temp: temp ? `${temp}°C` : 'N/A',
+                storage: storage,
+                linkedIngredients: linkedNames,
+                staff: activeStaff,
+                timestamp: Date.now()
+            };
+
+            if (window.dbCollections) {
+                try { await addDoc(window.dbCollections.batchLogs, newBatch); } catch (e) { console.error(e); }
+            } else {
+                state.batches.unshift(newBatch);
+                renderBatchLog();
+            }
+
+            document.getElementById('batch-item').value = "";
+            document.getElementById('batch-code').value = "";
+            document.getElementById('batch-temp').value = "";
+            logRoutineAction(`Batch Produced: ${item} [Lot: ${code}]`);
+        }
+
+        function renderBatchLog() {
+            const tbody = document.getElementById('batch-log-body');
+            tbody.innerHTML = state.batches.map((b, idx) => `
+                <tr>
+                    <td><strong>${b.time}</strong></td>
+                    <td>${b.item}</td>
+                    <td><strong>${b.code}</strong></td>
+                    <td>${b.linkedIngredients.map(i => `<span class="ingredient-tag">${i}</span>`).join('') || 'None'}</td>
+                    <td><span class="ingredient-tag" style="color:#fff;">${b.staff || 'Staff'}</span></td>
+                    <td><button class="btn-print" onclick="printThermalLabel('batch', ${idx})">🖨️ Label</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderChecklists() {
+            const container = document.getElementById('checklist-container');
+            let html = '<h4 style="font-size:0.8rem; color:var(--brand-green); margin:10px 0 6px 0;">OPENING / PRE-SESSION CHECKS</h4>';
+
+            state.preSessionChecklist.forEach((task, idx) => {
+                const key = `pre_${idx}`;
+                const checked = !!state.completedTasks[key];
+                const meta = state.completedTasks[key] || '';
+
+                html += `
+                    <div class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleChecklist('pre_${idx}')">
+                        <div class="checkbox-mock"></div>
+                        <div class="task-text">${task}</div>
+                        ${checked ? `<div class="timestamp">${meta}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleChecklist(key) {
+            if (state.completedTasks[key]) {
+                delete state.completedTasks[key];
+            } else {
+                const time = new Date().toLocaleTimeString([], { hour12: false });
+                state.completedTasks[key] = `${time} (${activeStaff})`;
+            }
+            renderChecklists();
+        }
+
+        function addCustomTask() {
+            const input = document.getElementById('new-task-text');
+            if (!input.value.trim()) return;
+            state.customTasks.push(input.value.trim());
+            input.value = "";
+            renderChecklists();
+        }
+
+        // THERMAL LABEL PRINTING ENGINE (Bluetooth + Esc-Pos Dialog)
+        function printThermalLabel(type, index) {
+            let labelHtml = "";
+            
+            if (type === 'pantry') {
+                const item = state.openedIngredients[index];
+                labelHtml = `
+                    <div style="border-bottom:2px solid #000; padding-bottom:2px; margin-bottom:4px; font-weight:bold;">THE CAKE FORGE</div>
+                    <div><strong>OPENED INGREDIENT</strong></div>
+                    <div>Item: ${item.name}</div>
+                    <div>Opened: ${item.openedDate}</div>
+                    <div><strong>USE BY: ${item.expiryDate}</strong></div>
+                    <div>Allergens: ${item.allergens.join(', ') || 'NONE'}</div>
+                    <div>By: ${item.staff || 'Staff'}</div>
+                `;
+            } else if (type === 'batch') {
+                const item = state.batches[index];
+                labelHtml = `
+                    <div style="border-bottom:2px solid #000; padding-bottom:2px; margin-bottom:4px; font-weight:bold;">THE CAKE FORGE</div>
+                    <div><strong>PRODUCED BATCH RECORD</strong></div>
+                    <div>Item: ${item.item}</div>
+                    <div>Batch/Lot #: ${item.code}</div>
+                    <div>Date: ${item.date || new Date().toLocaleDateString('en-GB')} ${item.time}</div>
+                    <div>Storage: ${item.storage}</div>
+                    <div>By: ${item.staff || 'Staff'}</div>
+                `;
+            }
+
+            const area = document.getElementById('thermal-print-area');
+            area.innerHTML = labelHtml;
+            document.body.classList.add('printing-label');
+            window.print();
+            document.body.classList.remove('printing-label');
+        }
+
+        function toggleCameraScanner() {
+            const view = document.getElementById('camera-scanner-view');
+            const btn = document.getElementById('btn-cam-toggle');
+
+            if (view.style.display === 'block') {
+                if (html5QrCode) html5QrCode.stop().then(() => { view.style.display = 'none'; btn.textContent = '📷 Camera'; });
+            } else {
+                view.style.display = 'block';
+                btn.textContent = '❌ Stop Camera';
+                html5QrCode = new Html5Qrcode("camera-scanner-view");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (decodedText) => {
+                    document.getElementById('barcode-input').value = decodedText;
+                    html5QrCode.stop().then(() => { view.style.display = 'none'; btn.textContent = '📷 Camera'; fetchAndReviewProduct(); });
+                });
+            }
+        }
+
+        function exportDailyPdf() { window.print(); }
+
+        renderChecklists();
+        renderTimers();
+    </script>
+</body>
+</html>
