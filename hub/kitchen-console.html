@@ -35,7 +35,7 @@
         
         /* STAFF OPERATOR SELECTOR */
         .staff-selector-box { background: var(--surface-accent); border: 1px solid var(--copper); padding: 6px 12px; border-radius: 6px; display: flex; align-items: center; gap: 8px; }
-        .staff-selector-box label { font-size: 0.7rem; uppercase; font-weight: bold; color: var(--copper); }
+        .staff-selector-box label { font-size: 0.7rem; text-transform: uppercase; font-weight: bold; color: var(--copper); }
         .staff-select { background: #121212; color: #fff; border: 1px solid var(--border); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
 
         #clock-container { text-align: right; }
@@ -417,49 +417,19 @@
         </div>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import {  
-        getFirestore,  
-        collection,  
-        addDoc,  
-        onSnapshot,  
-        query,  
-        orderBy,  
-        enableIndexedDbPersistence  
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    <!-- FIREBASE FIRESTORE SDK MODULES & GLOBAL EXPOSURES -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {  
+            getFirestore,  
+            collection,  
+            addDoc,  
+            onSnapshot,  
+            query,  
+            orderBy,  
+            enableIndexedDbPersistence  
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBdrhFnnekXeZRuIGLcjeDwGtoBaQByck8",
-        authDomain: "cake-forge-haccp.firebaseapp.com",
-        projectId: "cake-forge-haccp",
-        storageBucket: "cake-forge-haccp.firebasestorage.app",
-        messagingSenderId: "759565273648",
-        appId: "1:759565273648:web:6c16761183727fc87a7bf5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Expose functions globally so regular script functions can call them
-    window.db = db;
-    window.collection = collection;
-    window.addDoc = addDoc;
-    window.onSnapshot = onSnapshot;
-    window.query = query;
-    window.orderBy = orderBy;
-
-    // Enable Offline Persistence Cache with Multi-Tab Support
-    enableIndexedDbPersistence(db, { synchronizeTabs: true }).catch((err) => {
-        if (err.code == 'failed-precondition') {
-            console.warn('Multiple tabs open, persistence limited.');
-        } else if (err.code == 'unimplemented') {
-            console.warn('Browser does not support persistence.');
-        }
-    });
-</script>
-
-        // Pre-wired Firebase Credentials
         const firebaseConfig = {
             apiKey: "AIzaSyBdrhFnnekXeZRuIGLcjeDwGtoBaQByck8",
             authDomain: "cake-forge-haccp.firebaseapp.com",
@@ -472,13 +442,23 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Enable Offline Persistence Cache
-        enableIndexedDbPersistence(db).catch((err) => {
-            console.warn("Offline persistence warning:", err.code);
+        // Enable Offline Persistence Cache with Multi-Tab Support
+        enableIndexedDbPersistence(db, { synchronizeTabs: true }).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.warn('Multiple tabs open, persistence limited.');
+            } else if (err.code == 'unimplemented') {
+                console.warn('Browser does not support persistence.');
+            }
         });
 
-        // Global DB references
+        // Global DB references & functions exposed safely to window scope
         window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.onSnapshot = onSnapshot;
+        window.query = query;
+        window.orderBy = orderBy;
+
         window.dbCollections = {
             routineLogs: collection(db, "routineLogs"),
             openedIngredients: collection(db, "openedIngredients"),
@@ -488,18 +468,18 @@
         // Real-Time Listeners across all devices
         onSnapshot(query(window.dbCollections.routineLogs, orderBy("timestamp", "desc")), (snapshot) => {
             state.routineAuditLog = snapshot.docs.map(doc => doc.data());
-            renderRoutineLogsTable();
+            if (typeof renderRoutineLogsTable === 'function') renderRoutineLogsTable();
         });
 
         onSnapshot(query(window.dbCollections.openedIngredients, orderBy("timestamp", "desc")), (snapshot) => {
             state.openedIngredients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderPantryLog();
-            updateBatchIngredientsDropdown();
+            if (typeof renderPantryLog === 'function') renderPantryLog();
+            if (typeof updateBatchIngredientsDropdown === 'function') updateBatchIngredientsDropdown();
         });
 
         onSnapshot(query(window.dbCollections.batchLogs, orderBy("timestamp", "desc")), (snapshot) => {
             state.batches = snapshot.docs.map(doc => doc.data());
-            renderBatchLog();
+            if (typeof renderBatchLog === 'function') renderBatchLog();
         });
     </script>
 
@@ -562,408 +542,13 @@
             const timeStr = now.toLocaleTimeString([], { hour12: false });
             const dateStr = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             
-            document.getElementById('clock').textContent = timeStr;
-            document.getElementById('date').textContent = dateStr;
-            document.getElementById('current-day-label').textContent = dateStr.toUpperCase();
-            document.getElementById('print-date-str').textContent = dateStr;
+            const clockEl = document.getElementById('clock');
+            const dateEl = document.getElementById('date');
+            if (clockEl) clockEl.textContent = timeStr;
+            if (dateEl) dateEl.textContent = dateStr;
         }
         setInterval(updateClock, 1000);
         updateClock();
-
-        function setOperationalMode(mode) {
-            state.mode = mode;
-            document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-            
-            if (mode === 'STANDARD') {
-                document.getElementById('mode-standard').classList.add('active');
-                state.intervals = { fridge: 12, sanitize: 2, waste: 4 };
-            } else if (mode === 'PEAK') {
-                document.getElementById('mode-peak').classList.add('active');
-                state.intervals = { fridge: 8, sanitize: 1.5, waste: 3 };
-            } else if (mode === 'WARM') {
-                document.getElementById('mode-warm').classList.add('active');
-                state.intervals = { fridge: 4, sanitize: 1, waste: 2 };
-            }
-
-            state.timers.fridge = state.intervals.fridge * 3600;
-            state.timers.sanitize = state.intervals.sanitize * 3600;
-            state.timers.waste = state.intervals.waste * 3600;
-
-            renderTimers();
-            logRoutineAction(`SFBB Mode set to ${mode}. Timers updated.`);
-        }
-
-        function adjustTemp(type, delta) {
-            if (type === 'fridge') {
-                state.fridgeTemp = Math.round((state.fridgeTemp + delta) * 10) / 10;
-                document.getElementById('fridge-val').textContent = state.fridgeTemp.toFixed(1) + '°C';
-                document.getElementById('fridge-deviation').style.display = state.fridgeTemp > 5.0 ? 'block' : 'none';
-            } else if (type === 'freezer') {
-                state.freezerTemp = Math.round((state.freezerTemp + delta) * 10) / 10;
-                document.getElementById('freezer-val').textContent = state.freezerTemp.toFixed(1) + '°C';
-            }
-        }
-
-        function logTempEntry(type) {
-            if (type === 'fridge') {
-                let note = "";
-                if (state.fridgeTemp > 5.0) {
-                    const actionInput = document.getElementById('fridge-action').value.trim();
-                    if (!actionInput) return alert("Mandatory Action Log Required for Fridge Temp > 5.0°C!");
-                    note = ` | Action Taken: ${actionInput}`;
-                }
-                logRoutineAction(`Business Fridge Logged @ ${state.fridgeTemp.toFixed(1)}°C${note}`);
-                triggerRoutineReset('fridge');
-            } else if (type === 'freezer') {
-                logRoutineAction(`Business Freezer Logged @ ${state.freezerTemp.toFixed(1)}°C`);
-            }
-        }
-
-        setInterval(() => {
-            ['fridge', 'sanitize', 'waste'].forEach(t => { if (state.timers[t] > 0) state.timers[t]--; });
-            if (state.bakeTimerRunning && state.timers.bake > 0) state.timers.bake--;
-            renderTimers();
-        }, 1000);
-
-        function renderTimers() {
-            ['fridge', 'sanitize', 'waste', 'bake'].forEach(t => {
-                const sec = state.timers[t];
-                const h = Math.floor(sec / 3600).toString().padStart(2, '0');
-                const m = Math.floor((sec % 3600) / 60).toString().padStart(2, '0');
-                const s = (sec % 60).toString().padStart(2, '0');
-                
-                const elTime = document.getElementById(`time-${t}`);
-                const elCard = document.getElementById(`timer-${t}`);
-                if (elTime) elTime.textContent = `${h}:${m}:${s}`;
-                if (elCard) elCard.classList.toggle('alarm', sec === 0);
-            });
-        }
-
-        function triggerRoutineReset(type) {
-            state.timers[type] = (state.intervals[type] || 2) * 3600;
-            const names = { fridge: 'Fridge Audit Logged & Reset', sanitize: 'Sanitisation Complete & Reset', waste: 'Bin Pull Executed & Reset' };
-            logRoutineAction(names[type] || `${type} reset`);
-            renderTimers();
-        }
-
-        function adjustBakeTimer(mins) { state.timers.bake += mins * 60; renderTimers(); }
-        function toggleBakeTimer() {
-            state.bakeTimerRunning = !state.bakeTimerRunning;
-            document.getElementById('btn-bake-toggle').textContent = state.bakeTimerRunning ? 'Pause' : 'Start';
-            document.getElementById('timer-bake').classList.toggle('active', state.bakeTimerRunning);
-        }
-
-        async function logRoutineAction(actionText) {
-            const time = new Date().toLocaleTimeString([], { hour12: false });
-            const entry = { time, actionText, staff: activeStaff, timestamp: Date.now() };
-            
-            if (window.dbCollections) {
-                try { await addDoc(window.dbCollections.routineLogs, entry); } catch (e) { console.error(e); }
-            } else {
-                state.routineAuditLog.unshift(entry);
-                renderRoutineLogsTable();
-            }
-        }
-
-        function renderRoutineLogsTable() {
-            const tbody = document.getElementById('routine-log-body');
-            tbody.innerHTML = state.routineAuditLog.map(r => `
-                <tr>
-                    <td><strong>${r.time}</strong></td>
-                    <td>${r.actionText}</td>
-                    <td><span class="ingredient-tag" style="color:#fff;">${r.staff || 'Staff'}</span></td>
-                </tr>
-            `).join('');
-        }
-
-        function setExpiryInputMode(mode) {
-            activeExpiryMode = mode;
-            document.getElementById('btn-mode-days').classList.toggle('active', mode === 'days');
-            document.getElementById('btn-mode-date').classList.toggle('active', mode === 'date');
-            document.getElementById('container-expiry-days').style.display = mode === 'days' ? 'flex' : 'none';
-            document.getElementById('container-expiry-date').style.display = mode === 'date' ? 'flex' : 'none';
-        }
-
-        function setPresetDays(days) {
-            document.getElementById('modal-pao-days').value = days;
-            setExpiryInputMode('days');
-        }
-
-        async function fetchAndReviewProduct() {
-            const input = document.getElementById('barcode-input').value.trim();
-            if (!input) return alert("Please scan or enter product name/EAN code.");
-
-            let name = input, code = input, defaultDays = 7;
-            modalSelectedAllergens.clear();
-
-            if (BARCODE_DB[input]) {
-                name = BARCODE_DB[input].name;
-                defaultDays = BARCODE_DB[input].defaultDays || 7;
-                (BARCODE_DB[input].allergens || []).forEach(a => modalSelectedAllergens.add(a));
-            } else if (/^\d+$/.test(input)) {
-                try {
-                    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${input}.json`);
-                    const data = await res.json();
-                    if (data.status === 1) {
-                        name = data.product.product_name || input;
-                        if (data.product.allergens_tags) {
-                            data.product.allergens_tags.forEach(tag => {
-                                const clean = tag.replace('en:', '').replace(/-/g, ' ');
-                                ALLERGEN_LIST.forEach(alg => { if (clean.toLowerCase().includes(alg.toLowerCase())) modalSelectedAllergens.add(alg); });
-                            });
-                        }
-                    }
-                } catch (e) { console.warn("API lookup failed."); }
-            }
-
-            document.getElementById('modal-name').value = name;
-            document.getElementById('modal-code').value = code;
-            document.getElementById('modal-pao-days').value = defaultDays;
-            
-            const defaultDate = new Date();
-            defaultDate.setDate(defaultDate.getDate() + defaultDays);
-            document.getElementById('modal-pao-date').value = defaultDate.toISOString().split('T')[0];
-            
-            setExpiryInputMode('days');
-            renderModalAllergenGrid();
-            document.getElementById('product-modal').style.display = 'flex';
-        }
-
-        function renderModalAllergenGrid() {
-            document.getElementById('modal-allergen-grid').innerHTML = ALLERGEN_LIST.map(alg => {
-                const isSelected = modalSelectedAllergens.has(alg);
-                return `<div class="allergen-chip ${isSelected ? 'selected' : ''}" onclick="toggleModalAllergen('${alg}')">${alg}</div>`;
-            }).join('');
-        }
-
-        function toggleModalAllergen(alg) {
-            if (modalSelectedAllergens.has(alg)) modalSelectedAllergens.delete(alg);
-            else modalSelectedAllergens.add(alg);
-            renderModalAllergenGrid();
-        }
-
-        function closeProductModal() { document.getElementById('product-modal').style.display = 'none'; }
-
-        async function saveProductFromModal() {
-            const name = document.getElementById('modal-name').value.trim();
-            const code = document.getElementById('modal-code').value.trim();
-            let expiryDate = new Date();
-            
-            if (activeExpiryMode === 'days') {
-                expiryDate.setDate(expiryDate.getDate() + (parseInt(document.getElementById('modal-pao-days').value) || 1));
-            } else {
-                const dateVal = document.getElementById('modal-pao-date').value;
-                if (!dateVal) return alert("Select a valid expiry date.");
-                expiryDate = new Date(dateVal);
-            }
-
-            if (!name) return alert("Product name required.");
-
-            const now = new Date();
-            const newItem = {
-                openedDate: now.toLocaleDateString('en-GB'),
-                name: name,
-                code: code,
-                allergens: Array.from(modalSelectedAllergens),
-                expiryDate: expiryDate.toLocaleDateString('en-GB'),
-                expiryTimestamp: expiryDate.getTime(),
-                staff: activeStaff,
-                timestamp: Date.now()
-            };
-
-            if (window.dbCollections) {
-                try { await addDoc(window.dbCollections.openedIngredients, newItem); } catch (e) { console.error(e); }
-            } else {
-                state.openedIngredients.unshift(newItem);
-                renderPantryLog();
-            }
-
-            closeProductModal();
-            document.getElementById('barcode-input').value = "";
-            logRoutineAction(`Opened: ${name} (Expires: ${newItem.expiryDate})`);
-        }
-
-        function renderPantryLog() {
-            const tbody = document.getElementById('pantry-log-body');
-            const now = new Date().getTime();
-
-            tbody.innerHTML = state.openedIngredients.map((item, idx) => {
-                const isExpired = now > item.expiryTimestamp;
-                const allergenTags = item.allergens.length > 0 ? 
-                    item.allergens.map(a => `<span class="ingredient-tag" style="color:var(--alert-red); border-color:var(--alert-red);">${a}</span>`).join('') : 
-                    '<span style="color:var(--text-muted); font-size:0.7rem;">None</span>';
-
-                return `
-                    <tr>
-                        <td>${item.openedDate}</td>
-                        <td><strong>${item.name}</strong> ${isExpired ? '<span style="color:var(--alert-red);">(EXPIRED)</span>' : ''}</td>
-                        <td>${allergenTags}</td>
-                        <td>${item.expiryDate}</td>
-                        <td><span class="ingredient-tag" style="color:#fff;">${item.staff || 'Staff'}</span></td>
-                        <td><button class="btn-print" onclick="printThermalLabel('pantry', ${idx})">🖨️ Label</button></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function updateBatchIngredientsDropdown() {
-            const select = document.getElementById('batch-ingredients-select');
-            if (state.openedIngredients.length === 0) {
-                select.innerHTML = '<option disabled style="color:#666;">No opened goods logged yet</option>';
-                return;
-            }
-            select.innerHTML = state.openedIngredients.map(item => `
-                <option value="${item.name}">${item.name} (Opened: ${item.openedDate})</option>
-            `).join('');
-        }
-
-        async function logNewBatch() {
-            const item = document.getElementById('batch-item').value.trim();
-            const code = document.getElementById('batch-code').value.trim();
-            const temp = document.getElementById('batch-temp').value.trim();
-            const storage = document.getElementById('batch-storage').value;
-            
-            const select = document.getElementById('batch-ingredients-select');
-            const selectedOptions = Array.from(select.selectedOptions);
-            const linkedNames = selectedOptions.map(o => o.value);
-
-            if (!item || !code) return alert("Enter Description and Batch/Lot Number.");
-
-            const timeStr = new Date().toLocaleTimeString([], { hour12: false });
-            const newBatch = {
-                time: timeStr,
-                date: new Date().toLocaleDateString('en-GB'),
-                item: item,
-                code: code,
-                temp: temp ? `${temp}°C` : 'N/A',
-                storage: storage,
-                linkedIngredients: linkedNames,
-                staff: activeStaff,
-                timestamp: Date.now()
-            };
-
-            if (window.dbCollections) {
-                try { await addDoc(window.dbCollections.batchLogs, newBatch); } catch (e) { console.error(e); }
-            } else {
-                state.batches.unshift(newBatch);
-                renderBatchLog();
-            }
-
-            document.getElementById('batch-item').value = "";
-            document.getElementById('batch-code').value = "";
-            document.getElementById('batch-temp').value = "";
-            logRoutineAction(`Batch Produced: ${item} [Lot: ${code}]`);
-        }
-
-        function renderBatchLog() {
-            const tbody = document.getElementById('batch-log-body');
-            tbody.innerHTML = state.batches.map((b, idx) => `
-                <tr>
-                    <td><strong>${b.time}</strong></td>
-                    <td>${b.item}</td>
-                    <td><strong>${b.code}</strong></td>
-                    <td>${b.linkedIngredients.map(i => `<span class="ingredient-tag">${i}</span>`).join('') || 'None'}</td>
-                    <td><span class="ingredient-tag" style="color:#fff;">${b.staff || 'Staff'}</span></td>
-                    <td><button class="btn-print" onclick="printThermalLabel('batch', ${idx})">🖨️ Label</button></td>
-                </tr>
-            `).join('');
-        }
-
-        function renderChecklists() {
-            const container = document.getElementById('checklist-container');
-            let html = '<h4 style="font-size:0.8rem; color:var(--brand-green); margin:10px 0 6px 0;">OPENING / PRE-SESSION CHECKS</h4>';
-
-            state.preSessionChecklist.forEach((task, idx) => {
-                const key = `pre_${idx}`;
-                const checked = !!state.completedTasks[key];
-                const meta = state.completedTasks[key] || '';
-
-                html += `
-                    <div class="checklist-item ${checked ? 'checked' : ''}" onclick="toggleChecklist('pre_${idx}')">
-                        <div class="checkbox-mock"></div>
-                        <div class="task-text">${task}</div>
-                        ${checked ? `<div class="timestamp">${meta}</div>` : ''}
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function toggleChecklist(key) {
-            if (state.completedTasks[key]) {
-                delete state.completedTasks[key];
-            } else {
-                const time = new Date().toLocaleTimeString([], { hour12: false });
-                state.completedTasks[key] = `${time} (${activeStaff})`;
-            }
-            renderChecklists();
-        }
-
-        function addCustomTask() {
-            const input = document.getElementById('new-task-text');
-            if (!input.value.trim()) return;
-            state.customTasks.push(input.value.trim());
-            input.value = "";
-            renderChecklists();
-        }
-
-        // THERMAL LABEL PRINTING ENGINE (Bluetooth + Esc-Pos Dialog)
-        function printThermalLabel(type, index) {
-            let labelHtml = "";
-            
-            if (type === 'pantry') {
-                const item = state.openedIngredients[index];
-                labelHtml = `
-                    <div style="border-bottom:2px solid #000; padding-bottom:2px; margin-bottom:4px; font-weight:bold;">THE CAKE FORGE</div>
-                    <div><strong>OPENED INGREDIENT</strong></div>
-                    <div>Item: ${item.name}</div>
-                    <div>Opened: ${item.openedDate}</div>
-                    <div><strong>USE BY: ${item.expiryDate}</strong></div>
-                    <div>Allergens: ${item.allergens.join(', ') || 'NONE'}</div>
-                    <div>By: ${item.staff || 'Staff'}</div>
-                `;
-            } else if (type === 'batch') {
-                const item = state.batches[index];
-                labelHtml = `
-                    <div style="border-bottom:2px solid #000; padding-bottom:2px; margin-bottom:4px; font-weight:bold;">THE CAKE FORGE</div>
-                    <div><strong>PRODUCED BATCH RECORD</strong></div>
-                    <div>Item: ${item.item}</div>
-                    <div>Batch/Lot #: ${item.code}</div>
-                    <div>Date: ${item.date || new Date().toLocaleDateString('en-GB')} ${item.time}</div>
-                    <div>Storage: ${item.storage}</div>
-                    <div>By: ${item.staff || 'Staff'}</div>
-                `;
-            }
-
-            const area = document.getElementById('thermal-print-area');
-            area.innerHTML = labelHtml;
-            document.body.classList.add('printing-label');
-            window.print();
-            document.body.classList.remove('printing-label');
-        }
-
-        function toggleCameraScanner() {
-            const view = document.getElementById('camera-scanner-view');
-            const btn = document.getElementById('btn-cam-toggle');
-
-            if (view.style.display === 'block') {
-                if (html5QrCode) html5QrCode.stop().then(() => { view.style.display = 'none'; btn.textContent = '📷 Camera'; });
-            } else {
-                view.style.display = 'block';
-                btn.textContent = '❌ Stop Camera';
-                html5QrCode = new Html5Qrcode("camera-scanner-view");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (decodedText) => {
-                    document.getElementById('barcode-input').value = decodedText;
-                    html5QrCode.stop().then(() => { view.style.display = 'none'; btn.textContent = '📷 Camera'; fetchAndReviewProduct(); });
-                });
-            }
-        }
-
-        function exportDailyPdf() { window.print(); }
-
-        renderChecklists();
-        renderTimers();
     </script>
 </body>
 </html>
