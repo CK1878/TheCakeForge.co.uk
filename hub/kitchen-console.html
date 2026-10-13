@@ -417,18 +417,47 @@
         </div>
     </div>
 
-    <!-- FIREBASE FIRESTORE SDK MODULES -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            onSnapshot, 
-            query, 
-            orderBy, 
-            enableIndexedDbPersistence 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import {  
+        getFirestore,  
+        collection,  
+        addDoc,  
+        onSnapshot,  
+        query,  
+        orderBy,  
+        enableIndexedDbPersistence  
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdrhFnnekXeZRuIGLcjeDwGtoBaQByck8",
+        authDomain: "cake-forge-haccp.firebaseapp.com",
+        projectId: "cake-forge-haccp",
+        storageBucket: "cake-forge-haccp.firebasestorage.app",
+        messagingSenderId: "759565273648",
+        appId: "1:759565273648:web:6c16761183727fc87a7bf5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Expose functions globally so regular script functions can call them
+    window.db = db;
+    window.collection = collection;
+    window.addDoc = addDoc;
+    window.onSnapshot = onSnapshot;
+    window.query = query;
+    window.orderBy = orderBy;
+
+    // Enable Offline Persistence Cache with Multi-Tab Support
+    enableIndexedDbPersistence(db, { synchronizeTabs: true }).catch((err) => {
+        if (err.code == 'failed-precondition') {
+            console.warn('Multiple tabs open, persistence limited.');
+        } else if (err.code == 'unimplemented') {
+            console.warn('Browser does not support persistence.');
+        }
+    });
+</script>
 
         // Pre-wired Firebase Credentials
         const firebaseConfig = {
