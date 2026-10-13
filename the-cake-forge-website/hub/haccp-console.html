@@ -443,10 +443,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Enable Offline Persistence Cache
-        enableIndexedDbPersistence(db).catch((err) => {
-            console.warn("Offline persistence warning:", err.code);
-        });
+       // Enable Offline Persistence Cache with Multi-Tab Support
+enableIndexedDbPersistence(db, { synchronizeTabs: true }).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.warn('Multiple tabs open, persistence limited.');
+    } else if (err.code == 'unimplemented') {
+        console.warn('Browser does not support persistence.');
+    }
+});
 
         // Global DB references
         window.db = db;
