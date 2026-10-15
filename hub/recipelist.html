@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cake Forge - Recipe Library & Costing</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --surface: #1e1e1e;
+            --surface-accent: #2a2a2a;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
+            --brand-green: #00b0ff; 
+            --copper: #B87333;
+            --success: #00e676;
+            --border: #383838;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        header { background-color: var(--surface); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 2px solid var(--surface-accent); flex-wrap: wrap; gap: 10px; }
+        .brand h1 { font-size: 1.3rem; color: var(--brand-green); letter-spacing: 1px; }
+        .brand p { font-size: 0.75rem; color: var(--text-muted); }
+        .header-actions { display: flex; align-items: center; gap: 12px; }
+        main { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .panel { background-color: var(--surface); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; border: 1px solid var(--border); }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .recipe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
+        .recipe-card { background: var(--surface-accent); border: 1px solid var(--border); border-radius: 6px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .recipe-card h3 { color: var(--brand-green); font-size: 1.05rem; }
+        .recipe-ingredients { font-size: 0.85rem; color: var(--text-muted); list-style-type: disc; padding-left: 20px; }
+        .recipe-cost { font-size: 1rem; font-weight: bold; color: var(--success); margin-top: auto; padding-top: 8px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .btn-action { background-color: var(--brand-green); color: #000; border: none; padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .btn-secondary { background-color: #444; color: #fff; border: none; padding: 10px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.8rem; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>THE CAKE FORGE</h1>
+            <p>Master Recipe Library & Costing Matrix</p>
+        </div>
+        <div class="header-actions">
+            <a href="inventory.html" class="btn-secondary">Inventory Hub</a>
+            <a href="kitchen-console.html" class="btn-secondary">Kitchen Console</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="panel">
+            <div class="panel-header">
+                <h2>Costed Production Recipes</h2>
+                <span style="font-size:0.75rem; color:var(--copper);">Diesel Benchmark: £1.99/L</span>
+            </div>
+
+            <div class="recipe-grid">
+                <!-- Standard Vanilla Sponge -->
+                <div class="recipe-card">
+                    <h3>Standard Vanilla Sponge (3x 8" Pans)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>SR Flour (433g) — £0.20</li>
+                        <li>Unsalted Butter (340g) — £2.04</li>
+                        <li>Granulated Sugar (400g) — £0.44</li>
+                        <li>Eggs (4 equiv.) — £0.83</li>
+                        <li>Vanilla Extract (1 tbsp) — £1.25</li>
+                        <li>Buttermilk (360ml) — £1.20</li>
+                        <li>Salt & Raising Agents — £0.03</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £5.99</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Standard Vanilla Sponge', 5.99)">Log Batch to Stock</button>
+                    </div>
+                </div>
+
+                <!-- Structured Vanilla Sponge -->
+                <div class="recipe-card">
+                    <h3>Structured Vanilla Sponge (2x 8" Pans)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>Unsalted Butter (200g) — £1.20</li>
+                        <li>Caster Sugar (200g) — £0.35</li>
+                        <li>Large Eggs (4) — £0.83</li>
+                        <li>SR Flour (200g) — £0.09</li>
+                        <li>Baking Powder & Milk — £0.05</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £2.52</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Structured Vanilla Sponge (2x8)', 2.52)">Log Batch to Stock</button>
+                    </div>
+                </div>
+
+                <!-- Chocolate Cake 6" -->
+                <div class="recipe-card">
+                    <h3>Chocolate Cake (2x 6" Pans)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>Sunflower Oil (150ml) — £0.30</li>
+                        <li>SR Flour (175g) — £0.08</li>
+                        <li>Cocoa & Bicarb — £0.35</li>
+                        <li>Caster Sugar (150g) — £0.26</li>
+                        <li>Golden Syrup (2 tbsp) — £0.15</li>
+                        <li>Eggs (2) & Milk (150ml) — £0.57</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £1.71</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Chocolate Cake (2x6)', 1.71)">Log Batch to Stock</button>
+                    </div>
+                </div>
+
+                <!-- Red Velvet -->
+                <div class="recipe-card">
+                    <h3>Red Velvet Cake (3x 8" Pans)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>Plain Flour (595g) — £0.28</li>
+                        <li>Granulated Sugar (595g) — £0.65</li>
+                        <li>Cocoa, Salt, Bicarb — £0.25</li>
+                        <li>Eggs (3) & Veg Oil (170g) — £0.97</li>
+                        <li>Buttermilk (340g) & Vinegar — £1.15</li>
+                        <li>Unsalted Butter (255g) — £1.53</li>
+                        <li>Vanilla & Red Gel — £1.07</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £5.90</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Red Velvet Cake (3x8)', 5.90)">Log Batch to Stock</button>
+                    </div>
+                </div>
+
+                <!-- Swiss Meringue Buttercream -->
+                <div class="recipe-card">
+                    <h3>Swiss Meringue Buttercream (6 Cups)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>Pasteurised Egg Whites (170g) — £1.20</li>
+                        <li>Icing Sugar (680g) — £1.87</li>
+                        <li>Unsalted Butter (680g) — £4.08</li>
+                        <li>Vanilla Extract & Salt — £1.00</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £8.15</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Swiss Meringue Buttercream', 8.15)">Log Batch to Stock</button>
+                    </div>
+                </div>
+
+                <!-- Dark Chocolate Ganache -->
+                <div class="recipe-card">
+                    <h3>Dark Chocolate Ganache (2:1 Covering)</h3>
+                    <ul class="recipe-ingredients">
+                        <li>Callebaut Dark Chocolate (454g) — £4.99</li>
+                        <li>Double Cream (227ml) — £1.47</li>
+                    </ul>
+                    <div class="recipe-cost">
+                        <span>Total Batch: £6.46</span>
+                        <button class="btn-action" onclick="logBatchToInventory('Dark Chocolate Ganache', 6.46)">Log Batch to Stock</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBdrhFnnekXeZRuIGLcjeDwGtoBaQByck8",
+            authDomain: "cake-forge-haccp.firebaseapp.com",
+            projectId: "cake-forge-haccp",
+            storageBucket: "cake-forge-haccp.firebasestorage.app",
+            messagingSenderId: "759565273648",
+            appId: "1:759565273648:web:6c16761183727fc87a7bf5"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.logBatchToInventory = async function(recipeName, cost) {
+            try {
+                await addDoc(collection(db, "openedIngredients"), {
+                    name: `[BATCH] ${recipeName}`,
+                    barcode: "PRODUCTION-BATCH",
+                    allergens: ["Produced In-House"],
+                    expiryDate: "3 Days (Ambient)",
+                    timestamp: new Date().toLocaleDateString('en-GB'),
+                    staff: "Primary Baker",
+                    batchCost: cost
+                });
+                alert(`Successfully logged "${recipeName}" to your live inventory ledger!`);
+            } catch (err) {
+                console.error("Error logging batch:", err);
+                alert("Failed to sync batch to Firestore.");
+            }
+        };
+    </script>
+</body>
+</html>
