@@ -82,4 +82,199 @@
                     </div>
 
                     <div>
-                        <label class="text-xs text-stone-400 font-bold uppercase block mb-1
+                        <label class="text-xs text-stone-400 font-bold uppercase block mb-1">Frosting / Coating Layer</label>
+                        <select id="select-coating" onchange="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2.5 text-sm text-white">
+                            <option value="11.13">Basic American Buttercream (4 cups) - £11.13</option>
+                            <option value="8.15" selected>Swiss Meringue Buttercream (6 cups) - £8.15</option>
+                            <option value="6.46">Dark Chocolate Ganache (2:1 Covering) - £6.46</option>
+                            <option value="6.91">Milk Chocolate Ganache (3:1 Covering) - £6.91</option>
+                            <option value="6.91">White Chocolate Ganache (3:1 Covering) - £6.91</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Hardware, Structure & Consumables -->
+            <section class="bg-surface border border-stone-800 rounded-lg p-6 space-y-4">
+                <div class="border-b border-stone-800 pb-3">
+                    <h2 class="font-primary text-lg text-white font-bold">2. Hardware, Dowels & Structural Build</h2>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <label class="text-stone-400 block mb-1">Masonite Board (£)</label>
+                        <input type="number" id="cost-board" value="3.50" step="0.5" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="text-stone-400 block mb-1">Dowels & Center Rod (£)</label>
+                        <input type="number" id="cost-dowels" value="2.50" step="0.5" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-white">
+                    </div>
+                    <div>
+                        <label class="text-stone-400 block mb-1">Custom Box (£)</label>
+                        <input type="number" id="cost-box" value="4.00" step="0.5" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-white">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Labor Hours & Overhead -->
+            <section class="bg-surface border border-stone-800 rounded-lg p-6 space-y-4">
+                <div class="border-b border-stone-800 pb-3">
+                    <h2 class="font-primary text-lg text-white font-bold">3. Labor & Skilled Time</h2>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-stone-400 font-bold uppercase block mb-1">Hours Spent (Bake + Sculpt)</label>
+                        <input type="number" id="labor-hours" value="4" min="0.5" step="0.5" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-sm text-white">
+                    </div>
+                    <div>
+                        <label class="text-xs text-stone-400 font-bold uppercase block mb-1">Hourly Target Rate (£/hr)</label>
+                        <input type="number" id="labor-rate" value="15.00" min="10" step="1" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-sm text-white">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Delivery & Cumbrian Logistics (Volvo V40 D2) -->
+            <section class="bg-surface border border-stone-800 rounded-lg p-6 space-y-4">
+                <div class="border-b border-stone-800 pb-3 flex justify-between items-center">
+                    <h2 class="font-primary text-lg text-white font-bold">4. Cumbrian Delivery Logistics</h2>
+                    <span class="text-xs text-brandBlue font-mono">Volvo V40 D2 (1.6D)</span>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs text-stone-400 font-bold uppercase block mb-1">One-Way Distance (Miles)</label>
+                            <input type="number" id="delivery-miles" value="15" min="0" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-sm text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-stone-400 font-bold uppercase block mb-1">Fuel Price (£/Litre)</label>
+                            <input type="number" id="fuel-price" value="1.99" step="0.01" oninput="calculateQuote()" class="w-full bg-charcoal border border-stone-700 rounded p-2 text-sm text-white">
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-stone-400 space-y-1 bg-surfaceAccent/50 p-3 rounded border border-stone-800">
+                        <p>• <strong>Free Radius:</strong> 0 to 10 miles (Carlisle core zone = £0.00)</p>
+                        <p>• <strong>Route Metric:</strong> Return trip calculated beyond 10 miles at 55 MPG average (~11.8p / mile burn rate).</p>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Right Column: Live Quote Summary Card (5 cols) -->
+        <div class="lg:col-span-5">
+            <div class="bg-surface border-2 border-copper rounded-lg p-6 sticky top-8 space-y-6 shadow-[0_0_30px_rgba(184,115,51,0.1)]">
+                
+                <div class="border-b border-stone-800 pb-4">
+                    <span class="text-[10px] uppercase tracking-widest text-copper font-bold">The Cake Forge Commission Estimate</span>
+                    <h2 class="font-primary text-2xl font-bold text-white mt-1">Summary Breakdown</h2>
+                </div>
+
+                <div class="space-y-3 text-sm border-b border-stone-800 pb-4">
+                    <div class="flex justify-between text-stone-300">
+                        <span>Edible Ingredients Total:</span>
+                        <span id="summary-edibles" class="font-mono text-white">£0.00</span>
+                    </div>
+                    <div class="flex justify-between text-stone-300">
+                        <span>Hardware & Packaging:</span>
+                        <span id="summary-hardware" class="font-mono text-white">£0.00</span>
+                    </div>
+                    <div class="flex justify-between text-stone-300">
+                        <span>Decorating & Labor Time:</span>
+                        <span id="summary-labor" class="font-mono text-white">£0.00</span>
+                    </div>
+                    <div class="flex justify-between text-stone-300">
+                        <span>Fuel & Delivery Surcharge:</span>
+                        <span id="summary-delivery" class="font-mono text-white">£0.00</span>
+                    </div>
+                </div>
+
+                <!-- COGS & Margin Summary -->
+                <div class="space-y-2 text-xs text-stone-400 bg-charcoal p-3 rounded">
+                    <div class="flex justify-between">
+                        <span>Total COGS (Raw Costs):</span>
+                        <span id="summary-cogs" class="font-mono text-amber-400 font-bold">£0.00</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Target Profit Margin:</span>
+                        <span class="font-mono text-emerald-400 font-bold">35% Overhead Mark-up</span>
+                    </div>
+                </div>
+
+                <!-- Final Recommended Customer Quote -->
+                <div class="pt-2">
+                    <span class="text-xs uppercase tracking-widest text-stone-400 block">Recommended Customer Quote</span>
+                    <div id="summary-total" class="font-primary text-4xl font-extrabold text-brandBlue mt-1">£0.00</div>
+                </div>
+
+                <button onclick="window.print()" class="w-full bg-copper hover:bg-forgeGlow text-white font-bold py-3 text-xs uppercase tracking-widest rounded transition">
+                    🖨️ Print Quote Sheet
+                </button>
+
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        function calculateQuote() {
+            // 1. Edibles Calculation
+            const spongeBase = parseFloat(document.getElementById('select-sponge').value) || 0;
+            const multiplier = parseFloat(document.getElementById('sponge-multiplier').value) || 1;
+            const flavor = parseFloat(document.getElementById('select-flavor').value) || 0;
+            const coating = parseFloat(document.getElementById('select-coating').value) || 0;
+
+            const totalEdibles = (spongeBase * multiplier) + flavor + coating;
+
+            // 2. Hardware Calculation
+            const board = parseFloat(document.getElementById('cost-board').value) || 0;
+            const dowels = parseFloat(document.getElementById('cost-dowels').value) || 0;
+            const box = parseFloat(document.getElementById('cost-box').value) || 0;
+
+            const totalHardware = board + dowels + box;
+
+            // 3. Labor Calculation
+            const hours = parseFloat(document.getElementById('labor-hours').value) || 0;
+            const rate = parseFloat(document.getElementById('labor-rate').value) || 0;
+
+            const totalLabor = hours * rate;
+
+            // 4. Volvo V40 D2 Delivery Calculation
+            const milesOneWay = parseFloat(document.getElementById('delivery-miles').value) || 0;
+            const fuelPricePerLitre = parseFloat(document.getElementById('fuel-price').value) || 1.99;
+
+            let deliveryCost = 0;
+            if (milesOneWay > 10) {
+                const chargeableMilesOneWay = milesOneWay - 10;
+                const totalChargeableMilesRoundTrip = chargeableMilesOneWay * 2;
+                
+                // Volvo V40 D2 average mixed Cumbrian MPG ~55 MPG
+                // 1 Gallon = 4.54609 Litres. 55 MPG = 12.1 miles / Litre
+                const milesPerLitre = 12.1;
+                const litresUsed = totalChargeableMilesRoundTrip / milesPerLitre;
+                deliveryCost = litresUsed * fuelPricePerLitre;
+            }
+
+            // Summary Totals
+            const rawCOGS = totalEdibles + totalHardware + deliveryCost;
+            
+            // 35% business markup added to edible & hardware costs to cover kitchen utilities & wear
+            const overheadMarkedUpBuild = (totalEdibles + totalHardware) * 1.35;
+            const finalQuote = overheadMarkedUpBuild + totalLabor + deliveryCost;
+
+            // Render to Display
+            document.getElementById('summary-edibles').innerText = `£${totalEdibles.toFixed(2)}`;
+            document.getElementById('summary-hardware').innerText = `£${totalHardware.toFixed(2)}`;
+            document.getElementById('summary-labor').innerText = `£${totalLabor.toFixed(2)}`;
+            document.getElementById('summary-delivery').innerText = milesOneWay <= 10 ? 'FREE (Carlisle Zone)' : `£${deliveryCost.toFixed(2)}`;
+            
+            document.getElementById('summary-cogs').innerText = `£${rawCOGS.toFixed(2)}`;
+            document.getElementById('summary-total').innerText = `£${finalQuote.toFixed(2)}`;
+        }
+
+        // Run initial calculation on view
+        calculateQuote();
+    </script>
+</body>
+</html>
