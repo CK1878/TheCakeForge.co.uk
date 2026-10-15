@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Cake Forge - Standard Operating Procedures (SOP)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        charcoal: '#111111',
+                        surface: '#1E1E1E',
+                        surfaceAccent: '#2A2A2A',
+                        copper: '#B87333',
+                        forgeGlow: '#FF8C33',
+                        brandBlue: '#00B0FF'
+                    },
+                    fontFamily: {
+                        primary: ['Cinzel', 'serif'],
+                        secondary: ['Montserrat', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-charcoal text-stone-200 font-secondary min-h-screen p-4 md:p-8 flex flex-col justify-between">
+
+    <!-- Header Navigation -->
+    <header class="max-w-4xl mx-auto w-full bg-surface border border-stone-800 rounded-lg p-5 mb-8 flex justify-between items-center flex-wrap gap-4 print:hidden">
+        <div>
+            <h1 class="font-primary text-xl font-bold tracking-wider text-brandBlue">THE CAKE FORGE</h1>
+            <p class="text-xs uppercase tracking-widest text-copper">EHO & SFBB Compliant Standard Operating Procedures</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()" class="bg-copper hover:bg-forgeGlow text-white text-xs px-3 py-2 rounded transition">🖨️ Print SOP Manual</button>
+            <a href="index.html" class="bg-surfaceAccent hover:bg-stone-800 border border-stone-700 text-stone-300 text-xs px-3 py-2 rounded transition">&larr; Staff Hub</a>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full space-y-8 bg-surface border border-stone-800 rounded-lg p-6 md:p-10 shadow-xl">
+        
+        <!-- Document Title -->
+        <div class="border-b border-stone-800 pb-6 text-center md:text-left">
+            <span class="text-xs uppercase tracking-widest text-copper font-bold tracking-widest">Safer Food Better Business (SFBB) & HACCP Framework</span>
+            <h1 class="font-primary text-3xl font-bold text-white mt-2">Operating Procedures & Safety Protocol</h1>
+            <p class="text-stone-400 text-xs mt-2">Location: Carlisle, Cumbria | Registered Business: The Cake Forge</p>
+        </div>
+
+        <!-- Section 1 -->
+        <section class="space-y-3">
+            <h2 class="font-primary text-xl text-brandBlue font-bold border-b border-stone-800 pb-2">1. Kitchen Environment & Child/Domestic Isolation</h2>
+            <p class="text-sm text-stone-300 leading-relaxed">
+                The Cake Forge operates from a dedicated domestic kitchen in rented accommodation within Carlisle. To maintain absolute food safety separation:
+            </p>
+            <ul class="list-disc pl-5 text-sm text-stone-400 space-y-2">
+                <li><strong>Child Safety & Access:</strong> Commercial production is strictly restricted to times when children are at school or in bed, ensuring zero domestic interference during active baking, decorating, or packaging sessions.</li>
+                <li><strong>Countertop & Storage Clearance:</strong> All non-baking domestic items are cleared from countertops and stored in designated storage containers outside the kitchen prior to production.</li>
+                <li><strong>Dedicated Storage Zones:</strong> All business food storage, dedicated business fridge, and freezer units are housed within the kitchen. Business cupboards are sealed and clean. Perishable or food-contact items are stored in sealed containers or labelled, ziplocked bags.</li>
+            </ul>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="space-y-3">
+            <h2 class="font-primary text-xl text-brandBlue font-bold border-b border-stone-800 pb-2">2. Facility Management: Single Sink, Dishwasher & Waste</h2>
+            <p class="text-sm text-stone-300 leading-relaxed">
+                Operating with a single kitchen sink requires rigorous time-sequencing and mechanical sanitisation:
+            </p>
+            <ul class="list-disc pl-5 text-sm text-stone-400 space-y-2">
+                <li><strong>Time-Sequenced Sink Usage:</strong> Handwashing is strictly separated from equipment washing. Handwashing uses the dedicated sink equipped with compliant antibacterial soap and a blue roll dispenser.</li>
+                <li><strong>Mechanical Dishwashing:</strong> Heavy utensils, mixing bowls, and equipment are processed via the domestic dishwasher operating on high-temperature sanitising cycles, separating food prep wash cycles from household items.</li>
+                <li><strong>Waste Management:</strong> A touch-free motion bin is positioned in a corner against non-used cupboards during baking operations (with household bins stored inside cupboards). The commercial waste bin is emptied and sanitized at the end of every operational shift.</li>
+            </ul>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="space-y-3">
+            <h2 class="font-primary text-xl text-brandBlue font-bold border-b border-stone-800 pb-2">3. Staff Roles, Personal Hygiene & PPE</h2>
+            <p class="text-sm text-stone-300 leading-relaxed">
+                The business is operated by the Primary Baker (holding an active Level 2 Food Hygiene Certificate) and the Secondary Baker (husband assisting intermittently), both adhering to identical EHO-compliant digital workflows:
+            </p>
+            <ul class="list-disc pl-5 text-sm text-stone-400 space-y-2">
+                <li><strong>Operator Identification:</strong> All digital logs, cold holding checks, and batch entries are tagged on the Kitchen Console using designated operator profiles ("Primary Baker" / "Secondary Baker").</li>
+                <li><strong>PPE & Workwear:</strong> Blue detectable plasters, hair nets, and dedicated baking aprons are worn during all production shifts. Laundry of work aprons and headwear is washed separately from family items.</li>
+            </ul>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="space-y-3">
+            <h2 class="font-primary text-xl text-brandBlue font-bold border-b border-stone-800 pb-2">4. Digital Traceability & Natasha’s Law Compliance</h2>
+            <p class="text-sm text-stone-300 leading-relaxed">
+                The Cake Forge utilizes a custom web-based software ecosystem hosted on GitHub and synced via Firebase Firestore for end-to-end traceability:
+            </p>
+            <ul class="list-disc pl-5 text-sm text-stone-400 space-y-2">
+                <li><strong>Inventory Scanning & Allergens:</strong> Incoming raw ingredients are scanned via barcode or added via online cross-reference into the <a href="inventory.html" class="text-brandBlue underline">Inventory Hub</a>. The system automatically tracks the 14 mandatory EU/UK allergens.</li>
+                <li><strong>Batch Traceability:</strong> Cooked components (sponges, ganaches, buttercreams) are logged in the Kitchen Console, linking opened raw ingredient lots directly to the final product.</li>
+                <li><strong>Natasha’s Law & Thermal Labelling:</strong> Finished cakes and boxed portions generate direct thermal safety labels via Bluetooth or paper fallback, detailing exact item descriptions, lot numbers, opening dates, Period-After-Opening (PAO) expiry dates, storage instructions, and full allergen declarations.</li>
+                <li><strong>Safety Lockouts:</strong> Software guardrails enforce mandatory action logs if fridge temperatures deviate outside 0°C–5.0°C parameters or if out-of-date (OOD) / recalled products are detected.</li>
+            </ul>
+        </section>
+
+        <!-- Sign-off Footer -->
+        <div class="border-t border-stone-800 pt-6 mt-8 flex justify-between items-center text-xs text-stone-500">
+            <span>Reviewed & Authorised: The Cake Forge Quality Management</span>
+            <span>Framework Version: 2.5 (Cumbria EHO Aligned)</span>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-4xl mx-auto w-full text-center text-[10px] text-stone-500 uppercase tracking-widest py-6 print:hidden">
+        <span>The Cake Forge Internal Hub &bull; Authorised Use Only</span>
+    </footer>
+
+</body>
+</html>
