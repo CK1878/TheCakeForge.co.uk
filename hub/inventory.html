@@ -56,7 +56,7 @@
 
         .btn-action { background-color: var(--brand-green); color: #000; border: none; padding: 10px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
         .btn-secondary { background-color: #444; color: #fff; border: none; padding: 10px 16px; font-weight: bold; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
-        .btn-print { background-color: var(--copper); color: #fff; border: none; padding: 4px 8px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .btn-open { background-color: var(--success); color: #000; border: none; padding: 4px 10px; font-size: 0.75rem; font-weight: bold; border-radius: 4px; cursor: pointer; }
 
         #camera-scanner-view { width: 100%; max-width: 400px; margin: 8px 0; border-radius: 6px; overflow: hidden; border: 2px solid var(--brand-green); display: none; }
         .ingredient-tag { display: inline-block; background: #333; color: var(--brand-green); font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin: 2px 2px 2px 0; border: 1px solid #444; }
@@ -76,7 +76,7 @@
     <header>
         <div class="brand">
             <h1>THE CAKE FORGE</h1>
-            <p>Inventory & Stock Management Hub</p>
+            <p>Master Stock Cupboard Inventory (Unopened Goods)</p>
         </div>
 
         <div class="header-actions">
@@ -92,14 +92,14 @@
     </header>
 
     <main>
-        <!-- MASTER INVENTORY & PANTRY STOCK -->
+        <!-- MASTER INVENTORY & UNOPENED STOCK CUPBOARD -->
         <section class="panel">
             <div class="panel-header">
-                <h2>Active Opened Pantry Stock</h2>
+                <h2>Stock Cupboard (Unopened Master Inventory)</h2>
             </div>
 
             <div class="add-task-box">
-                <span style="font-size:0.75rem; font-weight:bold; color:var(--brand-green);">+ SCAN OR ADD INGREDIENT TO PANTRY</span>
+                <span style="font-size:0.75rem; font-weight:bold; color:var(--brand-green);">+ SCAN OR ADD NEW UNOPENED INGREDIENT TO STOCK</span>
                 <div class="add-task-row">
                     <input type="text" id="barcode-input" class="add-task-input" placeholder="Scan Barcode (EAN) or Type Name..." style="flex-grow:2;">
                     <button class="btn-action" onclick="fetchAndReviewProduct()">Scan & Review</button>
@@ -112,17 +112,17 @@
                 <table class="ledger">
                     <thead>
                         <tr>
-                            <th>Opened Date</th>
+                            <th>Added Date</th>
                             <th>Ingredient Description</th>
                             <th>14 Allergens</th>
-                            <th>Expiry Date</th>
+                            <th>Manufacturer Expiry / BBE</th>
                             <th>Operator</th>
-                            <th>Actions</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-ledger-body">
                         <tr>
-                            <td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">Connecting to Firestore Inventory...</td>
+                            <td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">Connecting to Stock Cupboard Database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -133,7 +133,7 @@
     <!-- PRODUCT REVIEW & EDIT MODAL -->
     <div class="modal-overlay" id="product-modal" style="display: none;">
         <div class="modal-card">
-            <h3>Review / Edit Product Details</h3>
+            <h3>Review / Edit Unopened Stock Details</h3>
             
             <div class="modal-form-group">
                 <label>Product Name</label>
@@ -154,19 +154,18 @@
             </div>
 
             <div class="modal-form-group" id="container-expiry-days">
-                <label>Shelf Life (Days)</label>
-                <input type="number" id="modal-pao-days" class="add-task-input" value="30" style="max-width: 140px;">
+                <label>Shelf Life (Days until BBE)</label>
+                <input type="number" id="modal-pao-days" class="add-task-input" value="180" style="max-width: 140px;">
                 <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px;">
-                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(7)">7 Days</button>
-                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(14)">14 Days</button>
                     <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(30)">30 Days</button>
-                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;", onclick="setPresetDays(90)">90 Days</button>
-                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(365)">365 Days</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(90)">90 Days</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(180)">180 Days</button>
+                    <button type="button" class="btn-secondary" style="padding:4px 8px; font-size:0.7rem;" onclick="setPresetDays(365)">1 Year</button>
                 </div>
             </div>
 
             <div class="modal-form-group" id="container-expiry-date" style="display:none;">
-                <label>Exact Expiry Date</label>
+                <label>Exact Manufacturer Expiry / BBE Date</label>
                 <input type="date" id="modal-pao-date" class="add-task-input" style="max-width: 200px; color-scheme: dark;">
             </div>
 
@@ -177,7 +176,7 @@
 
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
                 <button class="btn-secondary" onclick="closeProductModal()">Cancel</button>
-                <button class="btn-action" onclick="saveProductToFirestore()">Save to Inventory</button>
+                <button class="btn-action" onclick="saveProductToFirestore()">Add to Stock Cupboard</button>
             </div>
         </div>
     </div>
@@ -189,6 +188,8 @@
             getFirestore,  
             collection,  
             addDoc,  
+            deleteDoc,
+            doc,
             onSnapshot,  
             query,  
             orderBy,  
@@ -212,15 +213,18 @@
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
         window.onSnapshot = onSnapshot;
         window.query = query;
         window.orderBy = orderBy;
 
         window.dbCollections = {
+            masterInventory: collection(db, "masterInventory"),
             openedIngredients: collection(db, "openedIngredients")
         };
 
-        onSnapshot(query(window.dbCollections.openedIngredients, orderBy("timestamp", "desc")), (snapshot) => {
+        onSnapshot(query(window.dbCollections.masterInventory, orderBy("timestamp", "desc")), (snapshot) => {
             const inventory = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderInventoryTable(inventory);
         });
@@ -228,10 +232,10 @@
 
     <script>
         const BARCODE_DB = {
-            "5010029000148": { name: "Self Raising Flour 1.5kg", defaultDays: 90, allergens: ["Gluten"] },
+            "5010029000148": { name: "Self Raising Flour 1.5kg", defaultDays: 180, allergens: ["Gluten"] },
             "5000128001234": { name: "Callebaut 811 Dark Callets", defaultDays: 365, allergens: ["Soya", "Milk"] },
-            "5010011000010": { name: "Icing Sugar 1kg", defaultDays: 180, allergens: [] },
-            "5060105310002": { name: "Two Chicks Liquid Egg Whites", defaultDays: 7, allergens: ["Eggs"] }
+            "5010011000010": { name: "Icing Sugar 1kg", defaultDays: 365, allergens: [] },
+            "5060105310002": { name: "Two Chicks Liquid Egg Whites", defaultDays: 30, allergens: ["Eggs"] }
         };
 
         const ALLERGEN_LIST = [
@@ -251,7 +255,7 @@
         function renderInventoryTable(items) {
             const tbody = document.getElementById('inventory-ledger-body');
             if (!items.length) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">No active pantry stock recorded.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px;">Stock cupboard is empty. Scan items to add stock.</td></tr>`;
                 return;
             }
 
@@ -265,7 +269,7 @@
                         <td style="color:var(--success); font-weight:bold; font-variant-numeric:tabular-nums;">${item.expiryDate}</td>
                         <td>${item.staff || 'Primary Baker'}</td>
                         <td>
-                            <button class="btn-print" onclick="alert('Print label simulation for: ${item.name}')">🖨️ Label</button>
+                            <button class="btn-open" onclick="openStockItem('${item.id}', '${item.name.replace(/'/g, "\\'")}', '${encodeURIComponent(JSON.stringify(item.allergens || []))}')">📦 Open Item</button>
                         </td>
                     </tr>
                 `;
@@ -314,7 +318,7 @@
                 return;
             }
 
-            let match = BARCODE_DB[val] || { name: val, defaultDays: 30, allergens: [] };
+            let match = BARCODE_DB[val] || { name: val, defaultDays: 180, allergens: [] };
             
             document.getElementById('modal-name').value = match.name;
             document.getElementById('modal-code').value = val;
@@ -348,7 +352,7 @@
             const now = new Date();
 
             if (activeExpiryMode === 'days') {
-                const days = parseInt(document.getElementById('modal-pao-days').value) || 7;
+                const days = parseInt(document.getElementById('modal-pao-days').value) || 30;
                 const exp = new Date();
                 exp.setDate(now.getDate() + days);
                 expiryDateStr = exp.toLocaleDateString('en-GB');
@@ -371,12 +375,42 @@
             };
 
             try {
-                await window.addDoc(window.dbCollections.openedIngredients, payload);
+                await window.addDoc(window.dbCollections.masterInventory, payload);
                 closeProductModal();
                 document.getElementById('barcode-input').value = "";
             } catch (err) {
-                console.error("Error saving inventory item:", err);
+                console.error("Error saving to stock cupboard:", err);
                 alert("Failed to save to Firestore. Check console.");
+            }
+        }
+
+        // Action to transition item from Unopened Stock Cupboard -> Opened Kitchen Console
+        async function openStockItem(id, name, encodedAllergens) {
+            const allergens = JSON.parse(decodeURIComponent(encodedAllergens));
+            const now = new Date();
+            
+            // Default open kitchen shelf life (e.g., 14 days after opening or prompt)
+            const openExp = new Date();
+            openExp.setDate(now.getDate() + 14); 
+
+            const openedPayload = {
+                name: name,
+                barcode: "TRANSFERRED",
+                allergens: allergens,
+                expiryDate: openExp.toLocaleDateString('en-GB'),
+                timestamp: now.toLocaleDateString('en-GB'),
+                staff: activeStaff
+            };
+
+            try {
+                // Add to active kitchen opened goods
+                await window.addDoc(window.dbCollections.openedIngredients, openedPayload);
+                // Remove from unopened stock cupboard master inventory
+                await window.deleteDoc(window.doc(window.db, "masterInventory", id));
+                alert(`"${name}" has been opened and transferred to the Kitchen Console active pantry.`);
+            } catch (err) {
+                console.error("Error opening stock item:", err);
+                alert("Failed to transfer item. Check console.");
             }
         }
 
