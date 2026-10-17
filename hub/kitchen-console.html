@@ -431,6 +431,39 @@
         </div>
     </div>
 
+    <!-- EHO CRITICAL SAFETY LOCKOUT MODAL -->
+    <div class="modal-overlay" id="safety-lockout-modal" style="display: none; z-index: 9999; background: rgba(0,0,0,0.95);">
+        <div class="modal-card" style="border-color: var(--alert-red); max-width: 550px;">
+            <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 8px;">
+                <span style="font-size: 1.5rem;">🚨</span>
+                <h3 style="color: var(--alert-red); margin:0;">CRITICAL FOOD SAFETY DEVIATION</h3>
+            </div>
+            
+            <p id="lockout-warning-text" style="font-size: 0.85rem; color: #ff9100; line-height: 1.4;">
+                Warning: A critical temperature deviation or expired ingredient has triggered an EHO compliance lockout. Production is suspended until corrective action is recorded.
+            </p>
+
+            <div class="modal-form-group">
+                <label>Triggering Event / Parameter</label>
+                <input type="text" id="lockout-trigger-desc" class="add-task-input" readonly style="color: var(--alert-red); font-weight: bold;">
+            </div>
+
+            <div class="modal-form-group">
+                <label>Mandatory Corrective Action Taken (EHO Audit Trail)</label>
+                <textarea id="lockout-corrective-action" rows="3" class="add-task-input" placeholder="e.g., Fridge reset and door sealed, stock relocated to secondary chilled storage, or expired items disposed of in external waste..."></textarea>
+            </div>
+
+            <div class="modal-form-group">
+                <label>Verifying Staff Member</label>
+                <input type="text" id="lockout-staff-stamp" class="add-task-input" readonly style="color: var(--brand-green); font-weight: bold;">
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                <button class="btn-action" style="background-color: var(--alert-red); color: white;" onclick="resolveSafetyLockout()">Sign Off & Clear Lockout</button>
+            </div>
+        </div>
+    </div>
+
     <!-- FIREBASE FIRESTORE SDK MODULES & GLOBAL EXPOSURES -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -573,6 +606,7 @@
         let html5QrCode = null;
         let activeExpiryMode = 'days';
         let activeStaff = "Primary Baker";
+        let activeLockoutContext = null;
 
         let state = {
             mode: "STANDARD",
@@ -637,7 +671,6 @@
             document.getElementById('time-waste').innerText = formatSeconds(state.timers.waste);
             document.getElementById('time-bake').innerText = formatSeconds(state.timers.bake);
 
-            // Handle timer cards active/alarm states
             ['fridge', 'sanitize', 'waste'].forEach(key => {
                 const card = document.getElementById(`timer-${key}`);
                 if (state.timers[key] <= 0) {
@@ -720,7 +753,7 @@
             updateTimersDisplay();
         }
 
-        // TEMPERATURE AUDIT LOG
+        // TEMPERATURE AUDIT LOG & SAFETY LOCKOUT VALIDATION
         function adjustTemp(type, delta) {
             if (type === 'fridge') {
                 state.fridgeTemp = Math.round((state.fridgeTemp + delta) * 10) / 10;
@@ -737,13 +770,75 @@
             }
         }
 
+        function validateFridgeTemperature(tempValue, staffName) {
+            if (tempValue > 5.0 || tempValue < 0.0) {
+                triggerSafetyLockout({
+                    type: "TEMPERATURE_DEVIATION",
+                    description: `Dedicated Business Fridge recorded at ${tempValue}°C (Legal Safe Range: 0.0°C - 5.0°C)`,
+                    staff: staffName
+                });
+                return false;
+            }
+            return true;
+        }
+
+        function validateIngredientExpiry(ingredientName, expiryDateStr, staffName) {
+            const [day, month, year] = expiryDateStr.split('/');
+            const expiryDate = new Date(`${year}-${month}-${day}`);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            if (expiryDate < today) {
+                triggerSafetyLockout({
+                    type: "EXPIRED_PRODUCT",
+                    description: `Out-of-Date / Expired Product Detected: "${ingredientName}" (Expired on ${expiryDateStr})`,
+                    staff: staffName
+                });
+                return false;
+            }
+            return true;
+        }
+
+        function triggerSafetyLockout(context) {
+            activeLockoutContext = context;
+            document.getElementById('lockout-trigger-desc').value = context.description;
+            document.getElementById('lockout-staff-stamp').value = context.staff;
+            document.getElementById('lockout-corrective-action').value = '';
+            document.getElementById('safety-lockout-modal').style.display = 'flex';
+        }
+
+        async function resolveSafetyLockout() {
+            const actionText = document.getElementById('lockout-corrective-action').value.trim();
+            if (!actionText) {
+                alert("EHO Compliance Rule: You must record a corrective action before clearing this safety lockout.");
+                return;
+            }
+
+            if (window.db && window.dbCollections) {
+                try {
+                    await addDoc(window.dbCollections.routineLogs, {
+                        timestamp: new Date().toLocaleTimeString('en-GB'),
+                        date: new Date().toLocaleDateString('en-GB'),
+                        action: `[SAFETY LOCKOUT RESOLVED] ${activeLockoutContext.description} | Action: ${actionText}`,
+                        staff: activeLockoutContext.staff
+                    });
+                } catch (e) {
+                    console.error("Failed to sync lockout audit log:", e);
+                }
+            }
+
+            document.getElementById('safety-lockout-modal').style.display = 'none';
+            activeLockoutContext = null;
+            alert("Lockout cleared. Corrective action recorded to EHO audit trail.");
+        }
+
         async function logTempEntry(type) {
             const val = type === 'fridge' ? state.fridgeTemp : state.freezerTemp;
             const actionText = type === 'fridge' ? document.getElementById('fridge-action').value : 'N/A';
             
-            if (type === 'fridge' && val > 5.0 && !actionText.trim()) {
-                alert("Mandatory action log required for temperature deviation above 5.0°C!");
-                return;
+            if (type === 'fridge') {
+                const isValid = validateFridgeTemperature(val, activeStaff);
+                if (!isValid) return; // Triggers safety lockout modal
             }
 
             alert(`Logged ${type.toUpperCase()} temperature: ${val}°C (${activeStaff})`);
@@ -927,6 +1022,13 @@
                 expiryStr = new Date(dateVal).toLocaleDateString('en-GB');
             }
 
+            // Validate against out-of-date lockout before saving
+            const isNotExpired = validateIngredientExpiry(name, expiryStr, activeStaff);
+            if (!isNotExpired) {
+                closeProductModal();
+                return; // Blocks saving expired item
+            }
+
             const allergenArray = Array.from(modalSelectedAllergens);
 
             if (window.db && window.dbCollections) {
@@ -959,6 +1061,9 @@
             }
 
             state.openedIngredients.forEach(item => {
+                // Background check existing items for expiry
+                validateIngredientExpiry(item.name, item.expiryDate, activeStaff);
+
                 const allergenTags = (item.allergens || []).map(a => `<span class="ingredient-tag">${a}</span>`).join(' ');
                 tbody.innerHTML += `
                     <tr>
