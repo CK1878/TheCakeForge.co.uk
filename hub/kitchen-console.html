@@ -112,7 +112,7 @@
         .modal-form-group { display: flex; flex-direction: column; gap: 4px; }
         .modal-form-group label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold; }
 
-        /* PRINT STYLES FOR THERMAL LABEL & PAPER COPIES */
+        /* PRINT STYLES */
         @media print {
             body { background-color: #fff !important; color: #000 !important; font-size: 10pt; }
             header, .mode-strip, .add-task-box, .btn-action, .btn-secondary, .btn-temp, .header-actions, .timer-controls, .add-task-row, .modal-overlay, .btn-print { display: none !important; }
@@ -126,7 +126,6 @@
         }
         .print-header { display: none; }
         
-        /* THERMAL LABEL PRINT STYLING (HIDDEN ON SCREEN) */
         #thermal-print-area { display: none; }
         @media print {
             body.printing-label * { display: none !important; }
@@ -306,18 +305,7 @@
                             <th>Label</th>
                         </tr>
                     </thead>
-                    <tbody id="pantry-log-body">
-                        <tr>
-                            <td class="timestamp">15/10/2026</td>
-                            <td>Callebaut 811 Dark Callets (2.5kg)</td>
-                            <td><span class="ingredient-tag">Soya</span> <span class="ingredient-tag">Milk</span></td>
-                            <td style="color: var(--success); font-weight: bold;">15/11/2026</td>
-                            <td>Primary Baker</td>
-                            <td>
-                                <button class="btn-print" onclick="directPrintLabel('Callebaut 811 Dark', 'LOT-88412', '15/11/2026')">🖨️ Label</button>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="pantry-log-body"></tbody>
                 </table>
             </div>
         </section>
@@ -468,7 +456,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Enable Offline Persistence Cache with Multi-Tab Support
         enableIndexedDbPersistence(db, { synchronizeTabs: true }).catch((err) => {
             if (err.code == 'failed-precondition') {
                 console.warn('Multiple tabs open, persistence limited.');
@@ -477,7 +464,6 @@
             }
         });
 
-        // Global DB references & functions exposed safely to window scope
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
@@ -491,21 +477,20 @@
             batchLogs: collection(db, "batchLogs")
         };
 
-        // Real-Time Listeners across all devices
         onSnapshot(query(window.dbCollections.routineLogs, orderBy("timestamp", "desc")), (snapshot) => {
             state.routineAuditLog = snapshot.docs.map(doc => doc.data());
-            if (typeof renderRoutineLogsTable === 'function') renderRoutineLogsTable();
+            renderRoutineLogsTable();
         });
 
         onSnapshot(query(window.dbCollections.openedIngredients, orderBy("timestamp", "desc")), (snapshot) => {
             state.openedIngredients = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (typeof renderPantryLog === 'function') renderPantryLog();
-            if (typeof updateBatchIngredientsDropdown === 'function') updateBatchIngredientsDropdown();
+            renderPantryLog();
+            updateBatchIngredientsDropdown();
         });
 
         onSnapshot(query(window.dbCollections.batchLogs, orderBy("timestamp", "desc")), (snapshot) => {
             state.batches = snapshot.docs.map(doc => doc.data());
-            if (typeof renderBatchLog === 'function') renderBatchLog();
+            renderBatchLog();
         });
     </script>
 
@@ -562,7 +547,6 @@
                 }
             }
 
-            // Fallback Window Print
             document.getElementById('print-item-name').innerText = itemName;
             document.getElementById('print-lot').innerText = lotNo;
             document.getElementById('print-opened').innerText = new Date().toLocaleDateString('en-GB');
@@ -638,6 +622,446 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        // TIMER & COUNTDOWN ENGINE
+        function formatSeconds(seconds) {
+            const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        function updateTimersDisplay() {
+            document.getElementById('time-fridge').innerText = formatSeconds(state.timers.fridge);
+            document.getElementById('time-sanitize').innerText = formatSeconds(state.timers.sanitize);
+            document.getElementById('time-waste').innerText = formatSeconds(state.timers.waste);
+            document.getElementById('time-bake').innerText = formatSeconds(state.timers.bake);
+
+            // Handle timer cards active/alarm states
+            ['fridge', 'sanitize', 'waste'].forEach(key => {
+                const card = document.getElementById(`timer-${key}`);
+                if (state.timers[key] <= 0) {
+                    card.classList.add('alarm');
+                    card.classList.remove('active');
+                } else {
+                    card.classList.remove('alarm');
+                    card.classList.add('active');
+                }
+            });
+        }
+
+        function decrementTimers() {
+            if (state.timers.fridge > 0) state.timers.fridge--;
+            if (state.timers.sanitize > 0) state.timers.sanitize--;
+            if (state.timers.waste > 0) state.timers.waste--;
+            if (state.bakeTimerRunning && state.timers.bake > 0) {
+                state.timers.bake--;
+                if (state.timers.bake === 0) {
+                    state.bakeTimerRunning = false;
+                    document.getElementById('btn-bake-toggle').innerText = "Start";
+                    alert("⏰ Bake Timer Complete!");
+                }
+            }
+            updateTimersDisplay();
+        }
+        setInterval(decrementTimers, 1000);
+
+        async function triggerRoutineReset(routineKey) {
+            const labels = { fridge: "Fridge Audit Reset", sanitize: "Sanitisation Routine Reset", waste: "Bin Pull & Sanitise Reset" };
+            const actionName = labels[routineKey] || routineKey;
+            
+            state.timers[routineKey] = state.intervals[routineKey] * 3600;
+            updateTimersDisplay();
+
+            if (window.db && window.dbCollections) {
+                try {
+                    await addDoc(window.dbCollections.routineLogs, {
+                        timestamp: new Date().toLocaleTimeString('en-GB'),
+                        date: new Date().toLocaleDateString('en-GB'),
+                        action: actionName,
+                        staff: activeStaff
+                    });
+                } catch (e) {
+                    console.error("Firebase sync error for routine reset:", e);
+                }
+            }
+        }
+
+        function renderRoutineLogsTable() {
+            const tbody = document.getElementById('routine-log-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (state.routineAuditLog.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No reset logs recorded yet today.</td></tr>`;
+                return;
+            }
+
+            state.routineAuditLog.forEach(log => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="timestamp">${log.timestamp || '---'}</td>
+                        <td>${log.action || '---'}</td>
+                        <td>${log.staff || 'Primary Baker'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // BAKE TIMER CONTROLS
+        function toggleBakeTimer() {
+            state.bakeTimerRunning = !state.bakeTimerRunning;
+            document.getElementById('btn-bake-toggle').innerText = state.bakeTimerRunning ? "Pause" : "Start";
+        }
+
+        function adjustBakeTimer(mins) {
+            state.timers.bake += mins * 60;
+            if (state.timers.bake < 0) state.timers.bake = 0;
+            updateTimersDisplay();
+        }
+
+        // TEMPERATURE AUDIT LOG
+        function adjustTemp(type, delta) {
+            if (type === 'fridge') {
+                state.fridgeTemp = Math.round((state.fridgeTemp + delta) * 10) / 10;
+                document.getElementById('fridge-val').innerText = `${state.fridgeTemp.toFixed(1)}°C`;
+                const devPanel = document.getElementById('fridge-deviation');
+                if (state.fridgeTemp > 5.0) {
+                    devPanel.style.display = 'block';
+                } else {
+                    devPanel.style.display = 'none';
+                }
+            } else if (type === 'freezer') {
+                state.freezerTemp = Math.round((state.freezerTemp + delta) * 10) / 10;
+                document.getElementById('freezer-val').innerText = `${state.freezerTemp.toFixed(1)}°C`;
+            }
+        }
+
+        async function logTempEntry(type) {
+            const val = type === 'fridge' ? state.fridgeTemp : state.freezerTemp;
+            const actionText = type === 'fridge' ? document.getElementById('fridge-action').value : 'N/A';
+            
+            if (type === 'fridge' && val > 5.0 && !actionText.trim()) {
+                alert("Mandatory action log required for temperature deviation above 5.0°C!");
+                return;
+            }
+
+            alert(`Logged ${type.toUpperCase()} temperature: ${val}°C (${activeStaff})`);
+            if (type === 'fridge') {
+                document.getElementById('fridge-action').value = '';
+                document.getElementById('fridge-deviation').style.display = 'none';
+            }
+        }
+
+        // OPERATIONAL MODE
+        function setOperationalMode(mode) {
+            state.mode = mode;
+            ['standard', 'peak', 'warm'].forEach(m => {
+                document.getElementById(`mode-${m}`).classList.remove('active');
+            });
+            document.getElementById(`mode-${mode.toLowerCase()}`).classList.add('active');
+            renderChecklists();
+        }
+
+        // CHECKLIST ENGINE
+        function renderChecklists() {
+            const container = document.getElementById('checklist-container');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const list = state.mode === 'PEAK' ? state.preSessionChecklist : state.closingChecklist;
+            const titlePrefix = state.mode === 'PEAK' ? 'Peak Production Pre-Check' : 'Standard Closing Check';
+
+            document.getElementById('current-day-label').innerText = titlePrefix;
+
+            list.forEach((task, index) => {
+                const isChecked = state.completedTasks[index] || false;
+                container.innerHTML += `
+                    <div class="checklist-item ${isChecked ? 'checked' : ''}" onclick="toggleTask(${index})">
+                        <div class="checkbox-mock"></div>
+                        <div class="task-text">${task}</div>
+                    </div>
+                `;
+            });
+
+            state.customTasks.forEach((task, index) => {
+                const key = `custom_${index}`;
+                const isChecked = state.completedTasks[key] || false;
+                container.innerHTML += `
+                    <div class="checklist-item ${isChecked ? 'checked' : ''}" onclick="toggleTask('${key}')">
+                        <div class="checkbox-mock"></div>
+                        <div class="task-text">${task}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleTask(id) {
+            state.completedTasks[id] = !state.completedTasks[id];
+            renderChecklists();
+        }
+
+        function addCustomTask() {
+            const input = document.getElementById('new-task-text');
+            if (!input.value.trim()) return;
+            state.customTasks.push(input.value.trim());
+            input.value = '';
+            renderChecklists();
+        }
+
+        // PANTRY & BARCODE SCANNER LOGIC
+        function toggleCameraScanner() {
+            const scannerView = document.getElementById('camera-scanner-view');
+            if (scannerView.style.display === 'block') {
+                scannerView.style.display = 'none';
+                if (html5QrCode) html5QrCode.stop().catch(() => {});
+            } else {
+                scannerView.style.display = 'block';
+                html5QrCode = new Html5Qrcode("camera-scanner-view");
+                html5QrCode.start(
+                    { facingMode: "environment" },
+                    { fps: 10, qrbox: 250 },
+                    (decodedText) => {
+                        document.getElementById('barcode-input').value = decodedText;
+                        scannerView.style.display = 'none';
+                        html5QrCode.stop().catch(() => {});
+                        fetchAndReviewProduct();
+                    },
+                    (errorMessage) => {}
+                ).catch(err => {
+                    alert("Camera access failed or unavailable.");
+                    scannerView.style.display = 'none';
+                });
+            }
+        }
+
+        function fetchAndReviewProduct() {
+            const inputVal = document.getElementById('barcode-input').value.trim();
+            if (!inputVal) {
+                alert("Please enter a barcode or product name.");
+                return;
+            }
+
+            let prodName = inputVal;
+            let defaultDays = 7;
+            let allergens = [];
+
+            if (BARCODE_DB[inputVal]) {
+                prodName = BARCODE_DB[inputVal].name;
+                defaultDays = BARCODE_DB[inputVal].defaultDays;
+                allergens = BARCODE_DB[inputVal].allergens;
+            }
+
+            document.getElementById('modal-name').value = prodName;
+            document.getElementById('modal-code').value = inputVal;
+            document.getElementById('modal-pao-days').value = defaultDays;
+            
+            modalSelectedAllergens.clear();
+            allergens.forEach(a => modalSelectedAllergens.add(a));
+            
+            renderModalAllergenGrid();
+            document.getElementById('product-modal').style.display = 'flex';
+        }
+
+        function renderModalAllergenGrid() {
+            const grid = document.getElementById('modal-allergen-grid');
+            grid.innerHTML = '';
+            ALLERGEN_LIST.forEach(allergen => {
+                const isSelected = modalSelectedAllergens.has(allergen);
+                grid.innerHTML += `
+                    <div class="allergen-chip ${isSelected ? 'selected' : ''}" onclick="toggleModalAllergen('${allergen}')">
+                        ${allergen}
+                    </div>
+                `;
+            });
+        }
+
+        function toggleModalAllergen(allergen) {
+            if (modalSelectedAllergens.has(allergen)) {
+                modalSelectedAllergens.delete(allergen);
+            } else {
+                modalSelectedAllergens.add(allergen);
+            }
+            renderModalAllergenGrid();
+        }
+
+        function setExpiryInputMode(mode) {
+            activeExpiryMode = mode;
+            if (mode === 'days') {
+                document.getElementById('btn-mode-days').classList.add('active');
+                document.getElementById('btn-mode-date').classList.remove('active');
+                document.getElementById('container-expiry-days').style.display = 'flex';
+                document.getElementById('container-expiry-date').style.display = 'none';
+            } else {
+                document.getElementById('btn-mode-date').classList.add('active');
+                document.getElementById('btn-mode-days').classList.remove('active');
+                document.getElementById('container-expiry-date').style.display = 'flex';
+                document.getElementById('container-expiry-days').style.display = 'none';
+            }
+        }
+
+        function setPresetDays(days) {
+            document.getElementById('modal-pao-days').value = days;
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').style.display = 'none';
+        }
+
+        async function saveProductFromModal() {
+            const name = document.getElementById('modal-name').value;
+            const code = document.getElementById('modal-code').value;
+            
+            let expiryStr = "";
+            if (activeExpiryMode === 'days') {
+                const days = parseInt(document.getElementById('modal-pao-days').value) || 7;
+                const expDate = new Date();
+                expDate.setDate(expDate.getDate() + days);
+                expiryStr = expDate.toLocaleDateString('en-GB');
+            } else {
+                const dateVal = document.getElementById('modal-pao-date').value;
+                if (!dateVal) {
+                    alert("Please select a valid expiry date.");
+                    return;
+                }
+                expiryStr = new Date(dateVal).toLocaleDateString('en-GB');
+            }
+
+            const allergenArray = Array.from(modalSelectedAllergens);
+
+            if (window.db && window.dbCollections) {
+                try {
+                    await addDoc(window.dbCollections.openedIngredients, {
+                        name: name,
+                        barcode: code || "MANUAL",
+                        allergens: allergenArray,
+                        expiryDate: expiryStr,
+                        timestamp: new Date().toLocaleDateString('en-GB'),
+                        staff: activeStaff
+                    });
+                    document.getElementById('barcode-input').value = '';
+                    closeProductModal();
+                } catch (e) {
+                    console.error("Error saving ingredient to Firestore:", e);
+                    alert("Failed to save opened ingredient.");
+                }
+            }
+        }
+
+        function renderPantryLog() {
+            const tbody = document.getElementById('pantry-log-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (state.openedIngredients.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No opened inventory logged.</td></tr>`;
+                return;
+            }
+
+            state.openedIngredients.forEach(item => {
+                const allergenTags = (item.allergens || []).map(a => `<span class="ingredient-tag">${a}</span>`).join(' ');
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="timestamp">${item.timestamp || '---'}</td>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${allergenTags || '<span style="color:#666;">None</span>'}</td>
+                        <td style="color: var(--success); font-weight: bold;">${item.expiryDate}</td>
+                        <td>${item.staff || 'Primary Baker'}</td>
+                        <td>
+                            <button class="btn-print" onclick="directPrintLabel('${item.name.replace(/'/g, "")}', '${item.barcode}', '${item.expiryDate}')">🖨️ Label</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateBatchIngredientsDropdown() {
+            const select = document.getElementById('batch-ingredients-select');
+            if (!select) return;
+            select.innerHTML = '';
+
+            if (state.openedIngredients.length === 0) {
+                select.innerHTML = `<option disabled style="color:#666;">No opened goods logged yet</option>`;
+                return;
+            }
+
+            state.openedIngredients.forEach(item => {
+                select.innerHTML += `<option value="${item.name}">${item.name} (Exp: ${item.expiryDate})</option>`;
+            });
+        }
+
+        async function logNewBatch() {
+            const itemDesc = document.getElementById('batch-item').value.trim();
+            const batchCode = document.getElementById('batch-code').value.trim() || 'BATCH-001';
+            const coreTemp = document.getElementById('batch-temp').value.trim() || 'N/A';
+            const storage = document.getElementById('batch-storage').value;
+            
+            const selectElem = document.getElementById('batch-ingredients-select');
+            const selectedIngredients = Array.from(selectElem.selectedOptions).map(opt => opt.value);
+
+            if (!itemDesc) {
+                alert("Please enter a batch item description.");
+                return;
+            }
+
+            if (window.db && window.dbCollections) {
+                try {
+                    await addDoc(window.dbCollections.batchLogs, {
+                        timestamp: new Date().toLocaleTimeString('en-GB'),
+                        date: new Date().toLocaleDateString('en-GB'),
+                        itemDescription: itemDesc,
+                        batchCode: batchCode,
+                        coreTemp: coreTemp,
+                        storage: storage,
+                        usedIngredients: selectedIngredients.length > 0 ? selectedIngredients : ['None specified'],
+                        staff: activeStaff
+                    });
+
+                    document.getElementById('batch-item').value = '';
+                    document.getElementById('batch-code').value = '';
+                    document.getElementById('batch-temp').value = '';
+                    alert("Batch successfully logged and synced!");
+                } catch (e) {
+                    console.error("Error logging batch:", e);
+                    alert("Failed to sync batch to Firestore.");
+                }
+            }
+        }
+
+        function renderBatchLog() {
+            const tbody = document.getElementById('batch-log-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            if (state.batches.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No batches logged yet.</td></tr>`;
+                return;
+            }
+
+            state.batches.forEach(b => {
+                const usedList = (b.usedIngredients || []).map(i => `<span class="ingredient-tag">${i}</span>`).join(' ');
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="timestamp">${b.timestamp || '---'}</td>
+                        <td><strong>${b.itemDescription}</strong></td>
+                        <td><code>${b.batchCode}</code></td>
+                        <td>${usedList}</td>
+                        <td>${b.staff || 'Primary Baker'}</td>
+                        <td>
+                            <button class="btn-print" onclick="directPrintLabel('${b.itemDescription.replace(/'/g, "")}', '${b.batchCode}', '${b.date}')">🖨️ Label</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function exportDailyPdf() {
+            document.getElementById('print-date-str').innerText = "Audit Date: " + new Date().toLocaleDateString('en-GB');
+            window.print();
+        }
+
+        // Initialize checklists on load
+        renderChecklists();
     </script>
 </body>
 </html>
