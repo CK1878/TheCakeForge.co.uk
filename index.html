@@ -19,7 +19,7 @@
                         charcoal: '#111111',
                         copper: '#B87333',
                         forgeGlow: '#FF8C33',
-                        stoneCanvas: '#FAF9F5' // A warm, clean, premium off-white
+                        stoneCanvas: '#FAF9F5'
                     },
                     fontFamily: {
                         primary: ['Cinzel', 'serif'],
@@ -42,27 +42,26 @@
 
     <!-- Navigation -->
     <nav class="sticky top-0 bg-stoneCanvas/95 backdrop-blur-md z-50 border-b border-stone-200/60 shadow-sm">
-        <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
             <!-- Brand Name -->
             <div class="flex flex-col">
-                <span class="font-primary text-xl font-bold tracking-wider text-charcoal">THE CAKE FORGE</span>
-                <span class="font-secondary text-[8px] uppercase tracking-widest text-copper font-semibold -mt-1">Bespoke Cake Artistry</span>
+                <span class="font-primary text-base sm:text-xl font-bold tracking-wider text-charcoal">THE CAKE FORGE</span>
+                <span class="font-secondary text-[7px] sm:text-[8px] uppercase tracking-widest text-copper font-semibold -mt-1">Bespoke Cake Artistry</span>
             </div>
-            <div class="space-x-6 text-xs uppercase tracking-widest font-semibold text-charcoal">
+            <!-- Mobile Optimized Link Spacing -->
+            <div class="flex items-center space-x-3 sm:space-x-6 text-[10px] sm:text-xs uppercase tracking-widest font-semibold text-charcoal">
                 <a href="#gallery" class="hover:text-copper transition duration-300">Gallery</a>
                 <a href="#about" class="hover:text-copper transition duration-300">Our Story</a>
-                <a href="#contact" class="border border-copper px-4 py-2 text-copper hover:bg-copper hover:text-white transition duration-300 rounded-sm">Enquire</a>
+                <a href="#contact" class="border border-copper px-3 sm:px-4 py-1.5 sm:py-2 text-copper hover:bg-copper hover:text-white transition duration-300 rounded-sm">Enquire</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <header class="relative overflow-hidden py-24 md:py-32 px-6 border-b border-stone-200/40">
-        <!-- Subtle industrial background glow -->
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,140,51,0.08),transparent_50%)]"></div>
         
         <div class="max-w-4xl mx-auto text-center relative z-10">
-            <!-- Tag/Location -->
             <span class="text-xs uppercase letter-spacing-widest text-copper font-bold border-b-2 border-copper/30 pb-1 px-2">
                 Carlisle, Cumbria
             </span>
@@ -86,7 +85,7 @@
         </div>
     </header>
 
-    <!-- Gallery Section -->
+    <!-- Gallery Section (Expanded 8-Item Responsive Grid) -->
     <section id="gallery" class="max-w-6xl mx-auto px-6 py-20">
         <div class="text-center mb-16">
             <h2 class="font-primary text-3xl font-bold text-charcoal tracking-wider">Our Creations</h2>
@@ -94,40 +93,84 @@
             <p class="text-stone-500 text-xs uppercase tracking-widest">Handcrafted, structurally engineered, and entirely unique.</p>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-            <!-- Cake Card 1 -->
-            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
-                <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <img src="assets/images/cake1.jpg" alt="Sculpted Character Cake" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Grid Item 1 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake1.jpg" alt="Sculpted Character Cake" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-primary text-lg text-charcoal tracking-wide">Sculpted Characters</h3>
-                    <p class="text-stone-500 text-xs mt-2 leading-relaxed">Stunningly detailed 3D models and beloved characters brought to life in sugar.</p>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Sculpted Characters</h3>
                 </div>
             </div>
 
-            <!-- Cake Card 2 -->
-            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
-                <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <img src="assets/images/cake2.jpg" alt="Structural Gravity Defying Cake" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
+            <!-- Grid Item 2 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake2.jpg" alt="Structural Gravity Defying Cake" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-primary text-lg text-charcoal tracking-wide">Structural Marvels</h3>
-                    <p class="text-stone-500 text-xs mt-2 leading-relaxed">Multi-tiered gravity-defying masterpieces designed to challenge physics and delight guests.</p>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Structural Marvels</h3>
                 </div>
             </div>
 
-            <!-- Cake Card 3 -->
-            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300">
-                <div class="h-96 bg-stone-100 flex items-center justify-center text-stone-400 relative">
-                    <img src="assets/images/cake3.jpg" alt="Intricate Custom Occasion Cake" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-charcoal/5 hover:bg-transparent transition duration-300"></div>
+            <!-- Grid Item 3 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake3.jpg" alt="Geode Crystal Cake" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 </div>
-                <div class="p-6 text-center">
-                    <h3 class="font-primary text-lg text-charcoal tracking-wide">Bespoke Celebrations</h3>
-                    <p class="text-stone-500 text-xs mt-2 leading-relaxed">Artisan cakes custom-forged to capture personal passions, hobbies, or milestones.</p>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Geode & Crystal</h3>
+                </div>
+            </div>
+
+            <!-- Grid Item 4 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake4.jpg" alt="Gravity Defying Tiered Cake" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Gravity Defying</h3>
+                </div>
+            </div>
+
+            <!-- Grid Item 5 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake5.jpg" alt="Wedding Masterpiece" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Luxury Weddings</h3>
+                </div>
+            </div>
+
+            <!-- Grid Item 6 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake6.jpg" alt="Isomalt Sugarwork Detail" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Isomalt Artistry</h3>
+                </div>
+            </div>
+
+            <!-- Grid Item 7 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake7.jpg" alt="Novelty Celebration Cake" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Novelty Milestones</h3>
+                </div>
+            </div>
+
+            <!-- Grid Item 8 -->
+            <div class="bg-white border border-stone-200/50 overflow-hidden shadow-sm hover:shadow-md transition duration-300 group">
+                <div class="aspect-square bg-stone-100 flex items-center justify-center text-stone-400 relative overflow-hidden">
+                    <img src="assets/images/cake8.jpg" alt="Bespoke Confectionery" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                </div>
+                <div class="p-4 text-center">
+                    <h3 class="font-primary text-sm text-charcoal tracking-wide">Artisan Details</h3>
                 </div>
             </div>
         </div>
@@ -203,7 +246,6 @@
             </div>
             <p class="font-light">&copy; 2026 The Cake Forge UK. Handcrafted with passion in Carlisle, Cumbria.</p>
             
-            <!-- Staff Access Button -->
             <button onclick="accessStaffHub()" class="text-stone-600 hover:text-copper transition duration-300 text-[10px] uppercase tracking-widest focus:outline-none">
                 Staff Portal
             </button>
@@ -212,16 +254,14 @@
 
     <!-- Interactive Scripts -->
     <script>
-        // Image Fallbacks
         document.querySelectorAll('img').forEach(img => {
             img.onerror = function() {
                 this.style.display = 'none';
                 const parent = this.parentElement;
-                parent.innerHTML = `<span class="text-xs text-stone-400 font-mono tracking-wider">[ Image Placeholder: ${this.alt} ]</span>`;
+                parent.innerHTML = `<span class="text-xs text-stone-400 font-mono tracking-wider p-4 text-center">[ Image Placeholder: ${this.alt} ]</span>`;
             };
         });
 
-        // Staff Hub PIN Protection Function (Directs to the hub directory)
         function accessStaffHub() {
             const pin = prompt("Enter Staff Security PIN:");
             if (pin === "1878") {
